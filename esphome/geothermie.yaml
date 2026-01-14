@@ -1,6 +1,5 @@
 #z1 = KITCHEN_2
 
-# Configuration de base
 esphome:
   name: geothermie
   friendly_name: Geothermie
@@ -13,19 +12,10 @@ logger:
 
 captive_portal:
 
-# Packages depuis GitHub (décommentez après avoir poussé vers GitHub)
-# packages:
-#   globals: github://jlacasse/openZoningPannel/esphome/geothermie/globals.yaml@main
-#   configurations: github://jlacasse/openZoningPannel/esphome/geothermie/configurations.yaml@main
-#   binary_sensors: github://jlacasse/openZoningPannel/esphome/geothermie/binary_sensors.yaml@main
-#   switches: github://jlacasse/openZoningPannel/esphome/geothermie/switches.yaml@main
-#   select: github://jlacasse/openZoningPannel/esphome/geothermie/select.yaml@main
-#   automation: github://jlacasse/openZoningPannel/esphome/geothermie/automation.yaml@main
-
-# Includes locaux (commentez après avoir activé les packages GitHub)
-globals: !include geothermie/globals.yaml
-configurations: !include geothermie/configurations.yaml
-binary_sensor: !include geothermie/binary_sensors.yaml
-switch: !include geothermie/switches.yaml
-select: !include geothermie/select.yaml
-interval: !include geothermie/automation.yaml
+packages:
+  globals: github://jlacasse/openZoningPannel/packages/globals.yml
+  configurations: github://jlacasse/openZoningPannel/packages/configurations.yml
+  binary_sensors: github://jlacasse/openZoningPannel/packages/binary_sensors.yml
+  switches: github://jlacasse/openZoningPannel/packages/switches.yml
+  select: github://jlacasse/openZoningPannel/packages/select.yml
+  automation: github://jlacasse/openZoningPannel/packages/automation.yml
