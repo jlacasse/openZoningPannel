@@ -6,7 +6,7 @@ select:
   restore_value: true
   options:
     - Arrêt
-    - Fan
+    - Fan1
     - Clim Stage 1
     - Clim Stage 2
     - Chauffage Stage 1
