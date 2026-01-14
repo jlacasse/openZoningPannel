@@ -1,0 +1,99 @@
+- platform: template
+  name: "Geo_Output_mode"
+  id: Geothermie_mode_select
+  optimistic: true
+  restore_value: true
+  options:
+    - Arrêt
+    - Fan
+    - Clim Stage 1
+    - Clim Stage 2
+    - Chauffage Stage 1
+    - Chauffage Stage 2
+  initial_option: Arrêt
+  on_value:
+    then:
+      - lambda: |-
+          auto mode_index_opt = id(Geothermie_mode_select).active_index();
+          if (mode_index_opt.has_value()) {
+            int mode_index = mode_index_opt.value();
+            if (mode_index == 0) {
+              ESP_LOGD("Mode", "Tout à l'arrêt");
+              id(Led_Fan).turn_off();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_off();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_off();
+              id(Out_OB).turn_off();
+              id(Out_Y2).turn_off();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 1) {
+              ESP_LOGD("Mode", "Fan");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_off();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_off();
+              id(Out_Y2).turn_off();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 2) {
+              ESP_LOGD("Mode", "Clim Stage 1");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_on();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_on();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_on();
+              id(Out_Y2).turn_off();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 3) {
+              ESP_LOGD("Mode", "Clim Stage 2");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_on();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_on();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_on();
+              id(Out_Y2).turn_on();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 4) {
+              ESP_LOGD("Mode", "Chauffage Stage 1");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_on();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_on();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_off();
+              id(Out_Y2).turn_off();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 5) {
+              ESP_LOGD("Mode", "Chauffage Stage 2");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_on();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_on();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_off();
+              id(Out_Y2).turn_on();
+              id(Out_W1e).turn_off();
+            }
+          }

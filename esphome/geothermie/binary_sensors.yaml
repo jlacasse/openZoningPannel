@@ -1,0 +1,276 @@
+- platform: gpio
+  name: "Z1_Y2"
+  id: "Z1_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 15
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z1_Y1"
+  id: "Z1_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 14
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z1_G"
+  id: "Z1_G"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 13
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z1_OB"
+  id: "Z1_OB"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 12
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z2_Y2"
+  id: "Z2_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 11
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z2_Y1"
+  id: "Z2_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 10
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z2_G"
+  id: "Z2_G"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 9
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z2_OB"
+  id: "Z2_OB"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 8
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z3_Y2"
+  id: "Z3_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 7
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z3_Y1"
+  id: "Z3_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 6
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z3_G"
+  id: "Z3_G"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 5
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z3_OB"
+  id: "Z3_OB"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 4
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z4_Y2"
+  id: "Z4_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 3
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z4_Y1"
+  id: "Z4_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 2
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z4_G"
+  id: "Z4_G"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 1
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z4_OB"
+  id: "Z4_OB"
+  pin:
+    mcp23xxx: mcp23017_0x20
+    number: 0
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z5_Y2"
+  id: "Z5_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 15
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z5_Y1"
+  id: "Z5_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 14
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z5_G"
+  id: "Z5_G"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 13
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z5_OB"
+  id: "Z5_OB"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 12
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z6_Y2"
+  id: "Z6_Y2"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 11
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z6_Y1"
+  id: "Z6_Y1"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 10
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z6_G"
+  id: "Z6_G"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 9
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "Z6_OB"
+  id: "Z6_OB"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 8
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+
+- platform: gpio
+  name: "dry_input_G"
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 0
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s

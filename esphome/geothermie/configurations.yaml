@@ -1,0 +1,36 @@
+# Configuration I2C
+i2c:
+  scl: D1
+  sda: D2
+  scan: true
+  id: bus_a
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret geo_api_key
+
+# Over-The-Air updates
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# Configuration WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  min_auth_mode: WPA2
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Geothermie Fallback Hotspot"
+    password: !secret geo_fallback_password
+
+# Configuration des expanders MCP23017
+mcp23017:
+  - id: 'mcp23017_0x20'
+    address: 0x20
+  - id: 'mcp23017_0x21'
+    address: 0x21
+  - id: 'mcp23017_0x22'
+    address: 0x22

@@ -1,0 +1,32 @@
+# ESPHome secrets - DO NOT COMMIT
+secrets.yaml
+esphome/secrets.yaml
+
+# ESPHome build outputs
+.esphome/
+*.bin
+*.elf
+*.map
+
+# Logs
+*.log
+*.log.*
+
+# Temp files
+*.tmp
+*.bak
+*~
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Home Assistant
+home-assistant.log*
+known_devices.yaml

@@ -1,0 +1,41 @@
+- interval: 10s
+  then:
+    - lambda: |-
+        int temp_z1_state_count = 0;
+        if (id(Z1_G).state) {
+          temp_z1_state_count = temp_z1_state_count + 1;
+        }
+        if (id(Z1_OB).state) {
+          temp_z1_state_count = temp_z1_state_count + 10;
+        }
+        if (id(Z1_Y1).state) {
+          temp_z1_state_count = temp_z1_state_count + 100;
+        }
+        id(z1_state) = temp_z1_state_count;
+
+        int all_zone_count = id(z1_state) + id(z2_state) + id(z3_state) + id(z4_state) + id(z5_state) + id(z6_state);
+        id(global_all_zone_count) = all_zone_count;
+
+        unsigned long now_ms = millis();
+        unsigned long stage1_duration_ms = now_ms - id(geo_mode_stage1_start_ms);
+        bool stage1_active_1h = (stage1_duration_ms >= 3600000);
+
+        int new_mode = 0;
+
+        if (id(global_all_zone_count) >= 100) {
+          id(Out_G).turn_on();
+          id(Led_Fan).turn_on();
+        } else if (id(global_all_zone_count) > 0) {
+          id(Led_error).turn_on();
+        } else {
+          id(Out_G).turn_off();
+          id(Led_Fan).turn_off();
+          new_mode = 0;
+        }
+
+        if (new_mode != id(geo_current_mode)) {
+          id(geo_current_mode) = new_mode;
+          auto call = id(Geothermie_mode_select).make_call();
+          call.set_index(new_mode);
+          call.perform();
+        }

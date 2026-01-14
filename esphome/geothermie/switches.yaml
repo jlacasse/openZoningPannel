@@ -1,0 +1,229 @@
+- platform: gpio
+  name: Z1_damper_open
+  id: Z1_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 0
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z1_damper_close
+  id: Z1_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 1
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z2_damper_open
+  id: Z2_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 2
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z2_damper_close
+  id: Z2_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 3
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z3_damper_open
+  id: Z3_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 4
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z3_damper_close
+  id: Z3_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 5
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Led_Heat
+  id: Led_Heat
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 6
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Led_Cool
+  id: Led_Cool
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 7
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z4_damper_open
+  id: Z4_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 8
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z4_damper_close
+  id: Z4_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 9
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z5_damper_open
+  id: Z5_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 10
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z5_damper_close
+  id: Z5_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 11
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z6_damper_open
+  id: Z6_damper_open
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 12
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Z6_damper_close
+  id: Z6_damper_close
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 13
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Led_Fan
+  id: Led_Fan
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 14
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Led_error
+  id: Led_error
+  pin:
+    mcp23xxx: mcp23017_0x22
+    number: 15
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_Y1
+  id: Out_Y1
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 1
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_W3
+  id: Out_W3
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 2
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_W2
+  id: Out_W2
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 3
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_G
+  id: Out_G
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 4
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_OB
+  id: Out_OB
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 5
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_Y2
+  id: Out_Y2
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 6
+    mode:
+      output: true
+    inverted: true
+
+- platform: gpio
+  name: Out_W1e
+  id: Out_W1e
+  pin:
+    mcp23xxx: mcp23017_0x21
+    number: 7
+    mode:
+      output: true
+    inverted: true
