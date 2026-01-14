@@ -1,3 +1,4 @@
+select:
 - platform: template
   name: "Geo_Output_mode"
   id: Geothermie_mode_select
@@ -97,3 +98,4 @@
               id(Out_W1e).turn_off();
             }
           }
+

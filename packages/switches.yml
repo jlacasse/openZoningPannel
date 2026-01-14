@@ -1,3 +1,4 @@
+switch:
 - platform: gpio
   name: Z1_damper_open
   id: Z1_damper_open
@@ -227,3 +228,4 @@
     mode:
       output: true
     inverted: true
+

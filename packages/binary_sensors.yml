@@ -1,3 +1,4 @@
+binary_sensor:
 - platform: gpio
   name: "Z1_Y2"
   id: "Z1_Y2"
@@ -274,3 +275,4 @@
   filters:
     - delayed_on: 1s
     - delayed_off: 1s
+
