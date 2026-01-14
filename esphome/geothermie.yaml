@@ -1,18 +1,7 @@
 #z1 = KITCHEN_2
 
-esphome:
-  name: geothermie
-  friendly_name: Geothermie
-
-esp8266:
-  board: nodemcuv2
-
-# Enable logging
-logger:
-
-captive_portal:
-
 packages:
+  base: github://jlacasse/openZoningPannel/packages/base.yml
   globals: github://jlacasse/openZoningPannel/packages/globals.yml
   configurations: github://jlacasse/openZoningPannel/packages/configurations.yml
   binary_sensors: github://jlacasse/openZoningPannel/packages/binary_sensors.yml
