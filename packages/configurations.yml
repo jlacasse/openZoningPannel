@@ -13,7 +13,7 @@ api:
 # Over-The-Air updates
 ota:
   - platform: esphome
-    password: !secret ota_password
+    password: !secret geo_ota_password
 
 # Configuration WiFi
 wifi:
