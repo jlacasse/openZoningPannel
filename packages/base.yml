@@ -2,10 +2,13 @@ substitutions:
   device_name: geothermie
   friendly_name: Geothermie
   device_description: Contrôle de zones HVAC multi-zones pour géothermie
+  GEO_library: https://github.com/jlacasse/openZoningPannel.git
 
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  libraries:
+    - GeothermieLib=${GEO_library}
 
 esp8266:
   board: nodemcuv2
