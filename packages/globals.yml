@@ -1,27 +1,28 @@
-- id: geo_mode_stage1_start_ms
-  type: unsigned long
-  initial_value: '0'
-- id: geo_current_mode
-  type: int
-  initial_value: '0'
-- id: z1_state
-  type: int
-  initial_value: '0'
-- id: z2_state
-  type: int
-  initial_value: '0'
-- id: z3_state
-  type: int
-  initial_value: '0'
-- id: z4_state
-  type: int
-  initial_value: '0'
-- id: z5_state
-  type: int
-  initial_value: '0'
-- id: z6_state
-  type: int
-  initial_value: '0'
-- id: global_all_zone_count
-  type: int
-  initial_value: '0'
+globals:
+  - id: geo_mode_stage1_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: geo_current_mode
+    type: int
+    initial_value: '0'
+  - id: z1_state
+    type: int
+    initial_value: '0'
+  - id: z2_state
+    type: int
+    initial_value: '0'
+  - id: z3_state
+    type: int
+    initial_value: '0'
+  - id: z4_state
+    type: int
+    initial_value: '0'
+  - id: z5_state
+    type: int
+    initial_value: '0'
+  - id: z6_state
+    type: int
+    initial_value: '0'
+  - id: global_all_zone_count
+    type: int
+    initial_value: '0'
