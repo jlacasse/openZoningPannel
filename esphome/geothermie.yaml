@@ -24,7 +24,7 @@ captive_portal:
 
 # Includes locaux (commentez après avoir activé les packages GitHub)
 globals: !include geothermie/globals.yaml
-<<: !include geothermie/configurations.yaml
+configurations: !include geothermie/configurations.yaml
 binary_sensor: !include geothermie/binary_sensors.yaml
 switch: !include geothermie/switches.yaml
 select: !include geothermie/select.yaml
