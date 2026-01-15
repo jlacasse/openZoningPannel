@@ -9,6 +9,8 @@ interval:
           #define ZONE_COOLING_STAGE2 3
           #define ZONE_HEATING_STAGE1 4
           #define ZONE_HEATING_STAGE2 5
+          #define ZONE_PURGE 6
+          #define ZONE_WAIT 7
           #define ZONE_ERROR 99
 
           // Reset error flag at the beginning of each cycle
@@ -183,6 +185,378 @@ interval:
           if (z6_state_new != id(z6_state)) {
             id(z6_state) = z6_state_new;
             id(z6_state_text).update();
+          }
+
+          // ============= PASS 2: PURGE MANAGEMENT =============
+          // 5-minute purge after heating or cooling to clear ductwork
+          unsigned long now_ms = millis();
+          const unsigned long PURGE_DURATION_MS = 300000; // 5 minutes
+
+          // Zone 1 purge logic
+          bool z1_was_heating = (id(z1_state) == ZONE_HEATING_STAGE1 || id(z1_state) == ZONE_HEATING_STAGE2);
+          bool z1_was_cooling = (id(z1_state) == ZONE_COOLING_STAGE1 || id(z1_state) == ZONE_COOLING_STAGE2);
+          bool z1_is_heating = (z1_state_new == ZONE_HEATING_STAGE1 || z1_state_new == ZONE_HEATING_STAGE2);
+          bool z1_is_cooling = (z1_state_new == ZONE_COOLING_STAGE1 || z1_state_new == ZONE_COOLING_STAGE2);
+          
+          // Start purge when transitioning from heating/cooling to another state
+          if ((z1_was_heating || z1_was_cooling) && !z1_is_heating && !z1_is_cooling && z1_state_new != ZONE_ERROR) {
+            id(z1_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          // Apply purge state if timer active
+          if (id(z1_purge_end_ms) > now_ms && z1_state_new != ZONE_ERROR) {
+            z1_state_new = ZONE_PURGE;
+          } else if (id(z1_purge_end_ms) <= now_ms && id(z1_purge_end_ms) != 0) {
+            id(z1_purge_end_ms) = 0; // Clear expired timer
+          }
+
+          // Zone 2 purge logic
+          bool z2_was_heating = (id(z2_state) == ZONE_HEATING_STAGE1 || id(z2_state) == ZONE_HEATING_STAGE2);
+          bool z2_was_cooling = (id(z2_state) == ZONE_COOLING_STAGE1 || id(z2_state) == ZONE_COOLING_STAGE2);
+          bool z2_is_heating = (z2_state_new == ZONE_HEATING_STAGE1 || z2_state_new == ZONE_HEATING_STAGE2);
+          bool z2_is_cooling = (z2_state_new == ZONE_COOLING_STAGE1 || z2_state_new == ZONE_COOLING_STAGE2);
+          
+          if ((z2_was_heating || z2_was_cooling) && !z2_is_heating && !z2_is_cooling && z2_state_new != ZONE_ERROR) {
+            id(z2_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          if (id(z2_purge_end_ms) > now_ms && z2_state_new != ZONE_ERROR) {
+            z2_state_new = ZONE_PURGE;
+          } else if (id(z2_purge_end_ms) <= now_ms && id(z2_purge_end_ms) != 0) {
+            id(z2_purge_end_ms) = 0;
+          }
+
+          // Zone 3 purge logic
+          bool z3_was_heating = (id(z3_state) == ZONE_HEATING_STAGE1 || id(z3_state) == ZONE_HEATING_STAGE2);
+          bool z3_was_cooling = (id(z3_state) == ZONE_COOLING_STAGE1 || id(z3_state) == ZONE_COOLING_STAGE2);
+          bool z3_is_heating = (z3_state_new == ZONE_HEATING_STAGE1 || z3_state_new == ZONE_HEATING_STAGE2);
+          bool z3_is_cooling = (z3_state_new == ZONE_COOLING_STAGE1 || z3_state_new == ZONE_COOLING_STAGE2);
+          
+          if ((z3_was_heating || z3_was_cooling) && !z3_is_heating && !z3_is_cooling && z3_state_new != ZONE_ERROR) {
+            id(z3_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          if (id(z3_purge_end_ms) > now_ms && z3_state_new != ZONE_ERROR) {
+            z3_state_new = ZONE_PURGE;
+          } else if (id(z3_purge_end_ms) <= now_ms && id(z3_purge_end_ms) != 0) {
+            id(z3_purge_end_ms) = 0;
+          }
+
+          // Zone 4 purge logic
+          bool z4_was_heating = (id(z4_state) == ZONE_HEATING_STAGE1 || id(z4_state) == ZONE_HEATING_STAGE2);
+          bool z4_was_cooling = (id(z4_state) == ZONE_COOLING_STAGE1 || id(z4_state) == ZONE_COOLING_STAGE2);
+          bool z4_is_heating = (z4_state_new == ZONE_HEATING_STAGE1 || z4_state_new == ZONE_HEATING_STAGE2);
+          bool z4_is_cooling = (z4_state_new == ZONE_COOLING_STAGE1 || z4_state_new == ZONE_COOLING_STAGE2);
+          
+          if ((z4_was_heating || z4_was_cooling) && !z4_is_heating && !z4_is_cooling && z4_state_new != ZONE_ERROR) {
+            id(z4_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          if (id(z4_purge_end_ms) > now_ms && z4_state_new != ZONE_ERROR) {
+            z4_state_new = ZONE_PURGE;
+          } else if (id(z4_purge_end_ms) <= now_ms && id(z4_purge_end_ms) != 0) {
+            id(z4_purge_end_ms) = 0;
+          }
+
+          // Zone 5 purge logic
+          bool z5_was_heating = (id(z5_state) == ZONE_HEATING_STAGE1 || id(z5_state) == ZONE_HEATING_STAGE2);
+          bool z5_was_cooling = (id(z5_state) == ZONE_COOLING_STAGE1 || id(z5_state) == ZONE_COOLING_STAGE2);
+          bool z5_is_heating = (z5_state_new == ZONE_HEATING_STAGE1 || z5_state_new == ZONE_HEATING_STAGE2);
+          bool z5_is_cooling = (z5_state_new == ZONE_COOLING_STAGE1 || z5_state_new == ZONE_COOLING_STAGE2);
+          
+          if ((z5_was_heating || z5_was_cooling) && !z5_is_heating && !z5_is_cooling && z5_state_new != ZONE_ERROR) {
+            id(z5_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          if (id(z5_purge_end_ms) > now_ms && z5_state_new != ZONE_ERROR) {
+            z5_state_new = ZONE_PURGE;
+          } else if (id(z5_purge_end_ms) <= now_ms && id(z5_purge_end_ms) != 0) {
+            id(z5_purge_end_ms) = 0;
+          }
+
+          // Zone 6 purge logic
+          bool z6_was_heating = (id(z6_state) == ZONE_HEATING_STAGE1 || id(z6_state) == ZONE_HEATING_STAGE2);
+          bool z6_was_cooling = (id(z6_state) == ZONE_COOLING_STAGE1 || id(z6_state) == ZONE_COOLING_STAGE2);
+          bool z6_is_heating = (z6_state_new == ZONE_HEATING_STAGE1 || z6_state_new == ZONE_HEATING_STAGE2);
+          bool z6_is_cooling = (z6_state_new == ZONE_COOLING_STAGE1 || z6_state_new == ZONE_COOLING_STAGE2);
+          
+          if ((z6_was_heating || z6_was_cooling) && !z6_is_heating && !z6_is_cooling && z6_state_new != ZONE_ERROR) {
+            id(z6_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+          }
+          
+          if (id(z6_purge_end_ms) > now_ms && z6_state_new != ZONE_ERROR) {
+            z6_state_new = ZONE_PURGE;
+          } else if (id(z6_purge_end_ms) <= now_ms && id(z6_purge_end_ms) != 0) {
+            id(z6_purge_end_ms) = 0;
+          }
+
+          // ============= PASS 3: PRIORITY ANALYSIS AND WAIT STATES =============
+          // Determine global priority level: PURGE > HEATING > COOLING > FAN > OFF
+          // Zones with lower priority demands enter WAIT state
+          
+          int global_max_priority = 0; // 0=OFF, 1=FAN, 2=COOLING, 4=HEATING, 6=PURGE
+          
+          // Calculate priority for each zone
+          int z1_priority = 0, z2_priority = 0, z3_priority = 0;
+          int z4_priority = 0, z5_priority = 0, z6_priority = 0;
+          
+          if (z1_state_new == ZONE_PURGE) z1_priority = 6;
+          else if (z1_state_new == ZONE_HEATING_STAGE1 || z1_state_new == ZONE_HEATING_STAGE2) z1_priority = 4;
+          else if (z1_state_new == ZONE_COOLING_STAGE1 || z1_state_new == ZONE_COOLING_STAGE2) z1_priority = 2;
+          else if (z1_state_new == ZONE_FAN_ONLY) z1_priority = 1;
+          
+          if (z2_state_new == ZONE_PURGE) z2_priority = 6;
+          else if (z2_state_new == ZONE_HEATING_STAGE1 || z2_state_new == ZONE_HEATING_STAGE2) z2_priority = 4;
+          else if (z2_state_new == ZONE_COOLING_STAGE1 || z2_state_new == ZONE_COOLING_STAGE2) z2_priority = 2;
+          else if (z2_state_new == ZONE_FAN_ONLY) z2_priority = 1;
+          
+          if (z3_state_new == ZONE_PURGE) z3_priority = 6;
+          else if (z3_state_new == ZONE_HEATING_STAGE1 || z3_state_new == ZONE_HEATING_STAGE2) z3_priority = 4;
+          else if (z3_state_new == ZONE_COOLING_STAGE1 || z3_state_new == ZONE_COOLING_STAGE2) z3_priority = 2;
+          else if (z3_state_new == ZONE_FAN_ONLY) z3_priority = 1;
+          
+          if (z4_state_new == ZONE_PURGE) z4_priority = 6;
+          else if (z4_state_new == ZONE_HEATING_STAGE1 || z4_state_new == ZONE_HEATING_STAGE2) z4_priority = 4;
+          else if (z4_state_new == ZONE_COOLING_STAGE1 || z4_state_new == ZONE_COOLING_STAGE2) z4_priority = 2;
+          else if (z4_state_new == ZONE_FAN_ONLY) z4_priority = 1;
+          
+          if (z5_state_new == ZONE_PURGE) z5_priority = 6;
+          else if (z5_state_new == ZONE_HEATING_STAGE1 || z5_state_new == ZONE_HEATING_STAGE2) z5_priority = 4;
+          else if (z5_state_new == ZONE_COOLING_STAGE1 || z5_state_new == ZONE_COOLING_STAGE2) z5_priority = 2;
+          else if (z5_state_new == ZONE_FAN_ONLY) z5_priority = 1;
+          
+          if (z6_state_new == ZONE_PURGE) z6_priority = 6;
+          else if (z6_state_new == ZONE_HEATING_STAGE1 || z6_state_new == ZONE_HEATING_STAGE2) z6_priority = 4;
+          else if (z6_state_new == ZONE_COOLING_STAGE1 || z6_state_new == ZONE_COOLING_STAGE2) z6_priority = 2;
+          else if (z6_state_new == ZONE_FAN_ONLY) z6_priority = 1;
+          
+          // Find global max priority
+          global_max_priority = z1_priority;
+          if (z2_priority > global_max_priority) global_max_priority = z2_priority;
+          if (z3_priority > global_max_priority) global_max_priority = z3_priority;
+          if (z4_priority > global_max_priority) global_max_priority = z4_priority;
+          if (z5_priority > global_max_priority) global_max_priority = z5_priority;
+          if (z6_priority > global_max_priority) global_max_priority = z6_priority;
+          
+          // Apply WAIT state to zones with lower priority (but not OFF or ERROR)
+          if (z1_priority > 0 && z1_priority < global_max_priority && z1_state_new != ZONE_ERROR) {
+            z1_state_new = ZONE_WAIT;
+          }
+          if (z2_priority > 0 && z2_priority < global_max_priority && z2_state_new != ZONE_ERROR) {
+            z2_state_new = ZONE_WAIT;
+          }
+          if (z3_priority > 0 && z3_priority < global_max_priority && z3_state_new != ZONE_ERROR) {
+            z3_state_new = ZONE_WAIT;
+          }
+          if (z4_priority > 0 && z4_priority < global_max_priority && z4_state_new != ZONE_ERROR) {
+            z4_state_new = ZONE_WAIT;
+          }
+          if (z5_priority > 0 && z5_priority < global_max_priority && z5_state_new != ZONE_ERROR) {
+            z5_state_new = ZONE_WAIT;
+          }
+          if (z6_priority > 0 && z6_priority < global_max_priority && z6_state_new != ZONE_ERROR) {
+            z6_state_new = ZONE_WAIT;
+          }
+          
+          // Update state variables if changed (triggers text sensor updates)
+          if (z1_state_new != id(z1_state)) {
+            id(z1_state) = z1_state_new;
+            id(z1_state_text).update();
+          }
+          if (z2_state_new != id(z2_state)) {
+            id(z2_state) = z2_state_new;
+            id(z2_state_text).update();
+          }
+          if (z3_state_new != id(z3_state)) {
+            id(z3_state) = z3_state_new;
+            id(z3_state_text).update();
+          }
+          if (z4_state_new != id(z4_state)) {
+            id(z4_state) = z4_state_new;
+            id(z4_state_text).update();
+          }
+          if (z5_state_new != id(z5_state)) {
+            id(z5_state) = z5_state_new;
+            id(z5_state_text).update();
+          }
+          if (z6_state_new != id(z6_state)) {
+            id(z6_state) = z6_state_new;
+            id(z6_state_text).update();
+          }
+
+          // ============= PASS 4: DAMPER CONTROL =============
+          // Dampers require continuous activation: either OPEN or CLOSE must be ON
+          // 30-second hysteresis between state changes to avoid oscillation
+          const unsigned long DAMPER_HYSTERESIS_MS = 30000; // 30 seconds
+          
+          // Determine if all zones are OFF (special case: all dampers open)
+          bool all_zones_off = (global_max_priority == 0);
+          
+          // Zone 1 damper control
+          int z1_damper_target = 1; // 1=open, 0=closed
+          if (z1_state_new == ZONE_WAIT || z1_state_new == ZONE_ERROR) {
+            z1_damper_target = 0; // Close damper for WAIT or ERROR
+          } else if (all_zones_off) {
+            z1_damper_target = 1; // All dampers open when system idle
+          } else if (z1_state_new == ZONE_OFF) {
+            z1_damper_target = 0; // Close if zone is off but others are active
+          } else {
+            z1_damper_target = 1; // Open for active states (HEATING/COOLING/FAN/PURGE)
+          }
+          
+          // Apply damper change only if target differs and hysteresis elapsed
+          if (z1_damper_target != id(z1_damper_state) && (now_ms - id(z1_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            // Turn off both contacts briefly during transition
+            id(Z1_damper_open).turn_off();
+            id(Z1_damper_close).turn_off();
+            
+            // Update state and timestamp
+            id(z1_damper_state) = z1_damper_target;
+            id(z1_damper_change_ms) = now_ms;
+          }
+          
+          // Maintain continuous activation based on current state
+          if (id(z1_damper_state) == 1) {
+            id(Z1_damper_open).turn_on();
+            id(Z1_damper_close).turn_off();
+          } else {
+            id(Z1_damper_open).turn_off();
+            id(Z1_damper_close).turn_on();
+          }
+
+          // Zone 2 damper control
+          int z2_damper_target = 1;
+          if (z2_state_new == ZONE_WAIT || z2_state_new == ZONE_ERROR) {
+            z2_damper_target = 0;
+          } else if (all_zones_off) {
+            z2_damper_target = 1;
+          } else if (z2_state_new == ZONE_OFF) {
+            z2_damper_target = 0;
+          } else {
+            z2_damper_target = 1;
+          }
+          
+          if (z2_damper_target != id(z2_damper_state) && (now_ms - id(z2_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            id(Z2_damper_open).turn_off();
+            id(Z2_damper_close).turn_off();
+            id(z2_damper_state) = z2_damper_target;
+            id(z2_damper_change_ms) = now_ms;
+          }
+          
+          if (id(z2_damper_state) == 1) {
+            id(Z2_damper_open).turn_on();
+            id(Z2_damper_close).turn_off();
+          } else {
+            id(Z2_damper_open).turn_off();
+            id(Z2_damper_close).turn_on();
+          }
+
+          // Zone 3 damper control
+          int z3_damper_target = 1;
+          if (z3_state_new == ZONE_WAIT || z3_state_new == ZONE_ERROR) {
+            z3_damper_target = 0;
+          } else if (all_zones_off) {
+            z3_damper_target = 1;
+          } else if (z3_state_new == ZONE_OFF) {
+            z3_damper_target = 0;
+          } else {
+            z3_damper_target = 1;
+          }
+          
+          if (z3_damper_target != id(z3_damper_state) && (now_ms - id(z3_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            id(Z3_damper_open).turn_off();
+            id(Z3_damper_close).turn_off();
+            id(z3_damper_state) = z3_damper_target;
+            id(z3_damper_change_ms) = now_ms;
+          }
+          
+          if (id(z3_damper_state) == 1) {
+            id(Z3_damper_open).turn_on();
+            id(Z3_damper_close).turn_off();
+          } else {
+            id(Z3_damper_open).turn_off();
+            id(Z3_damper_close).turn_on();
+          }
+
+          // Zone 4 damper control
+          int z4_damper_target = 1;
+          if (z4_state_new == ZONE_WAIT || z4_state_new == ZONE_ERROR) {
+            z4_damper_target = 0;
+          } else if (all_zones_off) {
+            z4_damper_target = 1;
+          } else if (z4_state_new == ZONE_OFF) {
+            z4_damper_target = 0;
+          } else {
+            z4_damper_target = 1;
+          }
+          
+          if (z4_damper_target != id(z4_damper_state) && (now_ms - id(z4_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            id(Z4_damper_open).turn_off();
+            id(Z4_damper_close).turn_off();
+            id(z4_damper_state) = z4_damper_target;
+            id(z4_damper_change_ms) = now_ms;
+          }
+          
+          if (id(z4_damper_state) == 1) {
+            id(Z4_damper_open).turn_on();
+            id(Z4_damper_close).turn_off();
+          } else {
+            id(Z4_damper_open).turn_off();
+            id(Z4_damper_close).turn_on();
+          }
+
+          // Zone 5 damper control
+          int z5_damper_target = 1;
+          if (z5_state_new == ZONE_WAIT || z5_state_new == ZONE_ERROR) {
+            z5_damper_target = 0;
+          } else if (all_zones_off) {
+            z5_damper_target = 1;
+          } else if (z5_state_new == ZONE_OFF) {
+            z5_damper_target = 0;
+          } else {
+            z5_damper_target = 1;
+          }
+          
+          if (z5_damper_target != id(z5_damper_state) && (now_ms - id(z5_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            id(Z5_damper_open).turn_off();
+            id(Z5_damper_close).turn_off();
+            id(z5_damper_state) = z5_damper_target;
+            id(z5_damper_change_ms) = now_ms;
+          }
+          
+          if (id(z5_damper_state) == 1) {
+            id(Z5_damper_open).turn_on();
+            id(Z5_damper_close).turn_off();
+          } else {
+            id(Z5_damper_open).turn_off();
+            id(Z5_damper_close).turn_on();
+          }
+
+          // Zone 6 damper control
+          int z6_damper_target = 1;
+          if (z6_state_new == ZONE_WAIT || z6_state_new == ZONE_ERROR) {
+            z6_damper_target = 0;
+          } else if (all_zones_off) {
+            z6_damper_target = 1;
+          } else if (z6_state_new == ZONE_OFF) {
+            z6_damper_target = 0;
+          } else {
+            z6_damper_target = 1;
+          }
+          
+          if (z6_damper_target != id(z6_damper_state) && (now_ms - id(z6_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
+            id(Z6_damper_open).turn_off();
+            id(Z6_damper_close).turn_off();
+            id(z6_damper_state) = z6_damper_target;
+            id(z6_damper_change_ms) = now_ms;
+          }
+          
+          if (id(z6_damper_state) == 1) {
+            id(Z6_damper_open).turn_on();
+            id(Z6_damper_close).turn_off();
+          } else {
+            id(Z6_damper_open).turn_off();
+            id(Z6_damper_close).turn_on();
           }
 
           // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============

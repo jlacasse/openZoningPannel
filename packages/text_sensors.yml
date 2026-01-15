@@ -17,6 +17,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
@@ -41,6 +45,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
@@ -65,6 +73,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
@@ -89,6 +101,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
@@ -113,6 +129,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
@@ -137,6 +157,10 @@ text_sensor:
           return {"Heating Stage 1"};
         case ZONE_HEATING_STAGE2:
           return {"Heating Stage 2"};
+        case ZONE_PURGE:
+          return {"Purge"};
+        case ZONE_WAIT:
+          return {"Wait"};
         case ZONE_ERROR:
           return {"ERROR"};
         default:
