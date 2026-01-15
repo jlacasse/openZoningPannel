@@ -415,13 +415,13 @@ interval:
             id(z1_damper_change_ms) = now_ms;
           }
           
-          // Maintain continuous activation based on current state
+          // Maintain continuous activation based on current state (only if state differs)
           if (id(z1_damper_state) == 1) {
-            id(Z1_damper_open).turn_on();
-            id(Z1_damper_close).turn_off();
+            if (!id(Z1_damper_open).state) id(Z1_damper_open).turn_on();
+            if (id(Z1_damper_close).state) id(Z1_damper_close).turn_off();
           } else {
-            id(Z1_damper_open).turn_off();
-            id(Z1_damper_close).turn_on();
+            if (id(Z1_damper_open).state) id(Z1_damper_open).turn_off();
+            if (!id(Z1_damper_close).state) id(Z1_damper_close).turn_on();
           }
 
           // Zone 2 damper control
@@ -444,11 +444,11 @@ interval:
           }
           
           if (id(z2_damper_state) == 1) {
-            id(Z2_damper_open).turn_on();
-            id(Z2_damper_close).turn_off();
+            if (!id(Z2_damper_open).state) id(Z2_damper_open).turn_on();
+            if (id(Z2_damper_close).state) id(Z2_damper_close).turn_off();
           } else {
-            id(Z2_damper_open).turn_off();
-            id(Z2_damper_close).turn_on();
+            if (id(Z2_damper_open).state) id(Z2_damper_open).turn_off();
+            if (!id(Z2_damper_close).state) id(Z2_damper_close).turn_on();
           }
 
           // Zone 3 damper control
@@ -471,11 +471,11 @@ interval:
           }
           
           if (id(z3_damper_state) == 1) {
-            id(Z3_damper_open).turn_on();
-            id(Z3_damper_close).turn_off();
+            if (!id(Z3_damper_open).state) id(Z3_damper_open).turn_on();
+            if (id(Z3_damper_close).state) id(Z3_damper_close).turn_off();
           } else {
-            id(Z3_damper_open).turn_off();
-            id(Z3_damper_close).turn_on();
+            if (id(Z3_damper_open).state) id(Z3_damper_open).turn_off();
+            if (!id(Z3_damper_close).state) id(Z3_damper_close).turn_on();
           }
 
           // Zone 4 damper control
@@ -498,11 +498,11 @@ interval:
           }
           
           if (id(z4_damper_state) == 1) {
-            id(Z4_damper_open).turn_on();
-            id(Z4_damper_close).turn_off();
+            if (!id(Z4_damper_open).state) id(Z4_damper_open).turn_on();
+            if (id(Z4_damper_close).state) id(Z4_damper_close).turn_off();
           } else {
-            id(Z4_damper_open).turn_off();
-            id(Z4_damper_close).turn_on();
+            if (id(Z4_damper_open).state) id(Z4_damper_open).turn_off();
+            if (!id(Z4_damper_close).state) id(Z4_damper_close).turn_on();
           }
 
           // Zone 5 damper control
@@ -525,11 +525,11 @@ interval:
           }
           
           if (id(z5_damper_state) == 1) {
-            id(Z5_damper_open).turn_on();
-            id(Z5_damper_close).turn_off();
+            if (!id(Z5_damper_open).state) id(Z5_damper_open).turn_on();
+            if (id(Z5_damper_close).state) id(Z5_damper_close).turn_off();
           } else {
-            id(Z5_damper_open).turn_off();
-            id(Z5_damper_close).turn_on();
+            if (id(Z5_damper_open).state) id(Z5_damper_open).turn_off();
+            if (!id(Z5_damper_close).state) id(Z5_damper_close).turn_on();
           }
 
           // Zone 6 damper control
@@ -552,11 +552,11 @@ interval:
           }
           
           if (id(z6_damper_state) == 1) {
-            id(Z6_damper_open).turn_on();
-            id(Z6_damper_close).turn_off();
+            if (!id(Z6_damper_open).state) id(Z6_damper_open).turn_on();
+            if (id(Z6_damper_close).state) id(Z6_damper_close).turn_off();
           } else {
-            id(Z6_damper_open).turn_off();
-            id(Z6_damper_close).turn_on();
+            if (id(Z6_damper_open).state) id(Z6_damper_open).turn_off();
+            if (!id(Z6_damper_close).state) id(Z6_damper_close).turn_on();
           }
 
           // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============
