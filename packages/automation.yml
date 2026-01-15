@@ -42,6 +42,7 @@ interval:
           // Only update if state changed (prevents unnecessary Home Assistant updates)
           if (z1_state_new != id(z1_state)) {
             id(z1_state) = z1_state_new;
+            id(z1_state_text).update();
           }
 
           // ============= ZONE 2 STATE CALCULATION =============
@@ -69,6 +70,7 @@ interval:
           
           if (z2_state_new != id(z2_state)) {
             id(z2_state) = z2_state_new;
+            id(z2_state_text).update();
           }
 
           // ============= ZONE 3 STATE CALCULATION =============
@@ -96,6 +98,7 @@ interval:
           
           if (z3_state_new != id(z3_state)) {
             id(z3_state) = z3_state_new;
+            id(z3_state_text).update();
           }
 
           // ============= ZONE 4 STATE CALCULATION =============
@@ -123,6 +126,7 @@ interval:
           
           if (z4_state_new != id(z4_state)) {
             id(z4_state) = z4_state_new;
+            id(z4_state_text).update();
           }
 
           // ============= ZONE 5 STATE CALCULATION =============
@@ -150,6 +154,7 @@ interval:
           
           if (z5_state_new != id(z5_state)) {
             id(z5_state) = z5_state_new;
+            id(z5_state_text).update();
           }
 
           // ============= ZONE 6 STATE CALCULATION =============
@@ -177,6 +182,7 @@ interval:
           
           if (z6_state_new != id(z6_state)) {
             id(z6_state) = z6_state_new;
+            id(z6_state_text).update();
           }
 
           // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============

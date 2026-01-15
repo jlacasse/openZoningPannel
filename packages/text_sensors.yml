@@ -2,7 +2,7 @@ text_sensor:
   - platform: template
     name: "Zone 1 State"
     id: z1_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z1_state)) {
         case ZONE_OFF:
@@ -26,7 +26,7 @@ text_sensor:
   - platform: template
     name: "Zone 2 State"
     id: z2_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z2_state)) {
         case ZONE_OFF:
@@ -50,7 +50,7 @@ text_sensor:
   - platform: template
     name: "Zone 3 State"
     id: z3_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z3_state)) {
         case ZONE_OFF:
@@ -74,7 +74,7 @@ text_sensor:
   - platform: template
     name: "Zone 4 State"
     id: z4_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z4_state)) {
         case ZONE_OFF:
@@ -98,7 +98,7 @@ text_sensor:
   - platform: template
     name: "Zone 5 State"
     id: z5_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z5_state)) {
         case ZONE_OFF:
@@ -122,7 +122,7 @@ text_sensor:
   - platform: template
     name: "Zone 6 State"
     id: z6_state_text
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       switch (id(z6_state)) {
         case ZONE_OFF:
