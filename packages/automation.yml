@@ -1,19 +1,182 @@
+zone_states:
+
 interval:
   - interval: 10s
     then:
       - lambda: |-
-          int temp_z1_state_count = 0;
-          if (id(Z1_G).state) {
-            temp_z1_state_count = temp_z1_state_count + 1;
-          }
-          if (id(Z1_OB).state) {
-            temp_z1_state_count = temp_z1_state_count + 10;
-          }
-          if (id(Z1_Y1).state) {
-            temp_z1_state_count = temp_z1_state_count + 100;
-          }
-          id(z1_state) = temp_z1_state_count;
+          // Reset error flag at the beginning of each cycle
+          id(zone_error_flag) = false;
 
+          // ============= ZONE 1 STATE CALCULATION =============
+          int z1_state_new = ZONE_OFF;
+          
+          // Check for error condition: Y1 or Y2 active without G (DANGER: no fan with compressor)
+          if ((id(Z1_Y1).state || id(Z1_Y2).state) && !id(Z1_G).state) {
+            z1_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          // Priority: Y2 > Y1 (Stage 2 takes precedence if both active)
+          else if (id(Z1_Y2).state && id(Z1_G).state && id(Z1_OB).state) {
+            z1_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z1_Y1).state && id(Z1_G).state && id(Z1_OB).state) {
+            z1_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z1_Y2).state && id(Z1_G).state && !id(Z1_OB).state) {
+            z1_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z1_Y1).state && id(Z1_G).state && !id(Z1_OB).state) {
+            z1_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z1_G).state) {
+            z1_state_new = ZONE_FAN_ONLY;
+          }
+          
+          // Only update if state changed (prevents unnecessary Home Assistant updates)
+          if (z1_state_new != id(z1_state)) {
+            id(z1_state) = z1_state_new;
+          }
+
+          // ============= ZONE 2 STATE CALCULATION =============
+          int z2_state_new = ZONE_OFF;
+          
+          if ((id(Z2_Y1).state || id(Z2_Y2).state) && !id(Z2_G).state) {
+            z2_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          else if (id(Z2_Y2).state && id(Z2_G).state && id(Z2_OB).state) {
+            z2_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z2_Y1).state && id(Z2_G).state && id(Z2_OB).state) {
+            z2_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z2_Y2).state && id(Z2_G).state && !id(Z2_OB).state) {
+            z2_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z2_Y1).state && id(Z2_G).state && !id(Z2_OB).state) {
+            z2_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z2_G).state) {
+            z2_state_new = ZONE_FAN_ONLY;
+          }
+          
+          if (z2_state_new != id(z2_state)) {
+            id(z2_state) = z2_state_new;
+          }
+
+          // ============= ZONE 3 STATE CALCULATION =============
+          int z3_state_new = ZONE_OFF;
+          
+          if ((id(Z3_Y1).state || id(Z3_Y2).state) && !id(Z3_G).state) {
+            z3_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          else if (id(Z3_Y2).state && id(Z3_G).state && id(Z3_OB).state) {
+            z3_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z3_Y1).state && id(Z3_G).state && id(Z3_OB).state) {
+            z3_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z3_Y2).state && id(Z3_G).state && !id(Z3_OB).state) {
+            z3_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z3_Y1).state && id(Z3_G).state && !id(Z3_OB).state) {
+            z3_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z3_G).state) {
+            z3_state_new = ZONE_FAN_ONLY;
+          }
+          
+          if (z3_state_new != id(z3_state)) {
+            id(z3_state) = z3_state_new;
+          }
+
+          // ============= ZONE 4 STATE CALCULATION =============
+          int z4_state_new = ZONE_OFF;
+          
+          if ((id(Z4_Y1).state || id(Z4_Y2).state) && !id(Z4_G).state) {
+            z4_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          else if (id(Z4_Y2).state && id(Z4_G).state && id(Z4_OB).state) {
+            z4_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z4_Y1).state && id(Z4_G).state && id(Z4_OB).state) {
+            z4_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z4_Y2).state && id(Z4_G).state && !id(Z4_OB).state) {
+            z4_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z4_Y1).state && id(Z4_G).state && !id(Z4_OB).state) {
+            z4_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z4_G).state) {
+            z4_state_new = ZONE_FAN_ONLY;
+          }
+          
+          if (z4_state_new != id(z4_state)) {
+            id(z4_state) = z4_state_new;
+          }
+
+          // ============= ZONE 5 STATE CALCULATION =============
+          int z5_state_new = ZONE_OFF;
+          
+          if ((id(Z5_Y1).state || id(Z5_Y2).state) && !id(Z5_G).state) {
+            z5_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          else if (id(Z5_Y2).state && id(Z5_G).state && id(Z5_OB).state) {
+            z5_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z5_Y1).state && id(Z5_G).state && id(Z5_OB).state) {
+            z5_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z5_Y2).state && id(Z5_G).state && !id(Z5_OB).state) {
+            z5_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z5_Y1).state && id(Z5_G).state && !id(Z5_OB).state) {
+            z5_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z5_G).state) {
+            z5_state_new = ZONE_FAN_ONLY;
+          }
+          
+          if (z5_state_new != id(z5_state)) {
+            id(z5_state) = z5_state_new;
+          }
+
+          // ============= ZONE 6 STATE CALCULATION =============
+          int z6_state_new = ZONE_OFF;
+          
+          if ((id(Z6_Y1).state || id(Z6_Y2).state) && !id(Z6_G).state) {
+            z6_state_new = ZONE_ERROR;
+            id(zone_error_flag) = true;
+          }
+          else if (id(Z6_Y2).state && id(Z6_G).state && id(Z6_OB).state) {
+            z6_state_new = ZONE_HEATING_STAGE2;
+          }
+          else if (id(Z6_Y1).state && id(Z6_G).state && id(Z6_OB).state) {
+            z6_state_new = ZONE_HEATING_STAGE1;
+          }
+          else if (id(Z6_Y2).state && id(Z6_G).state && !id(Z6_OB).state) {
+            z6_state_new = ZONE_COOLING_STAGE2;
+          }
+          else if (id(Z6_Y1).state && id(Z6_G).state && !id(Z6_OB).state) {
+            z6_state_new = ZONE_COOLING_STAGE1;
+          }
+          else if (id(Z6_G).state) {
+            z6_state_new = ZONE_FAN_ONLY;
+          }
+          
+          if (z6_state_new != id(z6_state)) {
+            id(z6_state) = z6_state_new;
+          }
+
+          // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============
+          // TODO: Implement central unit control algorithm
+          // This section will calculate which outputs to activate based on zone demands
+          
+          /*
           int all_zone_count = id(z1_state) + id(z2_state) + id(z3_state) + id(z4_state) + id(z5_state) + id(z6_state);
           id(global_all_zone_count) = all_zone_count;
 
@@ -40,3 +203,5 @@ interval:
             call.set_index(new_mode);
             call.perform();
           }
+          */
+

@@ -1,4 +1,9 @@
+# Example configuration file for openZoningPannel
+# This file demonstrates how to set up the multi-zone HVAC control system
+# Copy this file to your ESPHome directory and customize as needed
+
 #z1 = KITCHEN_2
+#z5 = SUNROOM
 
 packages:
   base: github://jlacasse/openZoningPannel/packages/base.yml
@@ -8,3 +13,4 @@ packages:
   switches: github://jlacasse/openZoningPannel/packages/switches.yml
   select: github://jlacasse/openZoningPannel/packages/select.yml
   automation: github://jlacasse/openZoningPannel/packages/automation.yml
+  text_sensors: github://jlacasse/openZoningPannel/packages/text_sensors.yml

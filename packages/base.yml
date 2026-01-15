@@ -7,6 +7,14 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   comment: ${device_description}
+  includes:
+    - zone_states.h
+
+external_components:
+  - source: github://jlacasse/openZoningPannel
+    ref: main
+    refresh: 0s
+    components: [zone_states]
 
 esp8266:
   board: nodemcuv2
