@@ -5,51 +5,51 @@ esphome:
       then:
         - lambda: |-
             // Zone state constant definitions
-          #define ZONE_OFF 0
-          #define ZONE_FAN_ONLY 1
-          #define ZONE_COOLING_STAGE1 2
-          #define ZONE_COOLING_STAGE2 3
-          #define ZONE_HEATING_STAGE1 4
-          #define ZONE_HEATING_STAGE2 5
-          #define ZONE_PURGE 6
-          #define ZONE_WAIT 7
-          #define ZONE_ERROR 99
+            #define ZONE_OFF 0
+            #define ZONE_FAN_ONLY 1
+            #define ZONE_COOLING_STAGE1 2
+            #define ZONE_COOLING_STAGE2 3
+            #define ZONE_HEATING_STAGE1 4
+            #define ZONE_HEATING_STAGE2 5
+            #define ZONE_PURGE 6
+            #define ZONE_WAIT 7
+            #define ZONE_ERROR 99
 
-          // Force initial state calculation and text sensor updates
-          id(z1_state) = ZONE_OFF;
-          id(z1_state_text).update();
-          id(z2_state) = ZONE_OFF;
-          id(z2_state_text).update();
-          id(z3_state) = ZONE_OFF;
-          id(z3_state_text).update();
-          id(z4_state) = ZONE_OFF;
-          id(z4_state_text).update();
-          id(z5_state) = ZONE_OFF;
-          id(z5_state_text).update();
-          id(z6_state) = ZONE_OFF;
-          id(z6_state_text).update();
+            // Force initial state calculation and text sensor updates
+            id(z1_state) = ZONE_OFF;
+            id(z1_state_text).update();
+            id(z2_state) = ZONE_OFF;
+            id(z2_state_text).update();
+            id(z3_state) = ZONE_OFF;
+            id(z3_state_text).update();
+            id(z4_state) = ZONE_OFF;
+            id(z4_state_text).update();
+            id(z5_state) = ZONE_OFF;
+            id(z5_state_text).update();
+            id(z6_state) = ZONE_OFF;
+            id(z6_state_text).update();
 
-          // Initialize damper states (all open on boot)
-          id(z1_damper_state) = 1;
-          id(z2_damper_state) = 1;
-          id(z3_damper_state) = 1;
-          id(z4_damper_state) = 1;
-          id(z5_damper_state) = 1;
-          id(z6_damper_state) = 1;
+            // Initialize damper states (all open on boot)
+            id(z1_damper_state) = 1;
+            id(z2_damper_state) = 1;
+            id(z3_damper_state) = 1;
+            id(z4_damper_state) = 1;
+            id(z5_damper_state) = 1;
+            id(z6_damper_state) = 1;
 
-          // Set all dampers to open position
-          id(Z1_damper_open).turn_on();
-          id(Z1_damper_close).turn_off();
-          id(Z2_damper_open).turn_on();
-          id(Z2_damper_close).turn_off();
-          id(Z3_damper_open).turn_on();
-          id(Z3_damper_close).turn_off();
-          id(Z4_damper_open).turn_on();
-          id(Z4_damper_close).turn_off();
-          id(Z5_damper_open).turn_on();
-          id(Z5_damper_close).turn_off();
-          id(Z6_damper_open).turn_on();
-          id(Z6_damper_close).turn_off();
+            // Set all dampers to open position
+            id(Z1_damper_open).turn_on();
+            id(Z1_damper_close).turn_off();
+            id(Z2_damper_open).turn_on();
+            id(Z2_damper_close).turn_off();
+            id(Z3_damper_open).turn_on();
+            id(Z3_damper_close).turn_off();
+            id(Z4_damper_open).turn_on();
+            id(Z4_damper_close).turn_off();
+            id(Z5_damper_open).turn_on();
+            id(Z5_damper_close).turn_off();
+            id(Z6_damper_open).turn_on();
+            id(Z6_damper_close).turn_off();
 
 interval:
   - interval: 10s
