@@ -1,9 +1,10 @@
 # Initialize zone states on boot to avoid "unknown" states in Home Assistant
-on_boot:
-  - priority: -100  # Run after all components are initialized
-    then:
-      - lambda: |-
-          // Zone state constant definitions
+esphome:
+  on_boot:
+    - priority: -100  # Run after all components are initialized
+      then:
+        - lambda: |-
+            // Zone state constant definitions
           #define ZONE_OFF 0
           #define ZONE_FAN_ONLY 1
           #define ZONE_COOLING_STAGE1 2
