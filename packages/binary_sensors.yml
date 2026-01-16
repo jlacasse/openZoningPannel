@@ -9,6 +9,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z1_Y1"
@@ -20,6 +23,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z1_G"
@@ -31,6 +37,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z1_OB"
@@ -42,6 +51,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z2_Y2"
@@ -53,6 +65,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z2_Y1"
@@ -64,6 +79,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z2_G"
@@ -75,6 +93,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z2_OB"
@@ -86,6 +107,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z3_Y2"
@@ -97,6 +121,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z3_Y1"
@@ -108,6 +135,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z3_G"
@@ -119,6 +149,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z3_OB"
@@ -130,6 +163,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z4_Y2"
@@ -141,6 +177,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z4_Y1"
@@ -152,6 +191,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z4_G"
@@ -163,6 +205,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z4_OB"
@@ -174,6 +219,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z5_Y2"
@@ -185,6 +233,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z5_Y1"
@@ -196,6 +247,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z5_G"
@@ -207,6 +261,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z5_OB"
@@ -218,6 +275,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z6_Y2"
@@ -229,6 +289,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z6_Y1"
@@ -240,6 +303,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z6_G"
@@ -251,6 +317,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "Z6_OB"
@@ -262,6 +331,9 @@ binary_sensor:
       input: true
       pullup: true
     inverted: true
+  filters:
+    - delayed_on: 1s
+    - delayed_off: 1s
 
 - platform: gpio
   name: "dry_input_G"
