@@ -93,12 +93,6 @@ interval:
           else if (id(Z1_G).state) {
             z1_state_new = ZONE_FAN_ONLY;
           }
-          
-          // Only update if state changed (prevents unnecessary Home Assistant updates)
-          if (z1_state_new != id(z1_state)) {
-            id(z1_state) = z1_state_new;
-            id(z1_state_text).update();
-          }
 
           // ============= ZONE 2 STATE CALCULATION =============
           int z2_state_new = ZONE_OFF;
@@ -121,11 +115,6 @@ interval:
           }
           else if (id(Z2_G).state) {
             z2_state_new = ZONE_FAN_ONLY;
-          }
-          
-          if (z2_state_new != id(z2_state)) {
-            id(z2_state) = z2_state_new;
-            id(z2_state_text).update();
           }
 
           // ============= ZONE 3 STATE CALCULATION =============
@@ -150,11 +139,6 @@ interval:
           else if (id(Z3_G).state) {
             z3_state_new = ZONE_FAN_ONLY;
           }
-          
-          if (z3_state_new != id(z3_state)) {
-            id(z3_state) = z3_state_new;
-            id(z3_state_text).update();
-          }
 
           // ============= ZONE 4 STATE CALCULATION =============
           int z4_state_new = ZONE_OFF;
@@ -177,11 +161,6 @@ interval:
           }
           else if (id(Z4_G).state) {
             z4_state_new = ZONE_FAN_ONLY;
-          }
-          
-          if (z4_state_new != id(z4_state)) {
-            id(z4_state) = z4_state_new;
-            id(z4_state_text).update();
           }
 
           // ============= ZONE 5 STATE CALCULATION =============
@@ -206,11 +185,6 @@ interval:
           else if (id(Z5_G).state) {
             z5_state_new = ZONE_FAN_ONLY;
           }
-          
-          if (z5_state_new != id(z5_state)) {
-            id(z5_state) = z5_state_new;
-            id(z5_state_text).update();
-          }
 
           // ============= ZONE 6 STATE CALCULATION =============
           int z6_state_new = ZONE_OFF;
@@ -233,11 +207,6 @@ interval:
           }
           else if (id(Z6_G).state) {
             z6_state_new = ZONE_FAN_ONLY;
-          }
-          
-          if (z6_state_new != id(z6_state)) {
-            id(z6_state) = z6_state_new;
-            id(z6_state_text).update();
           }
 
           // ============= PASS 2: PURGE MANAGEMENT =============
