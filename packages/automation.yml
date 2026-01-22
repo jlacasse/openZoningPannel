@@ -209,37 +209,97 @@ interval:
             z6_state_new = ZONE_FAN_ONLY;
           }
 
-          // ============= PASS 2: PURGE MANAGEMENT =============
-          // 5-minute purge after heating or cooling to clear ductwork
+          // ============= PASS 2: INTELLIGENT MULTI-ZONE PURGE MANAGEMENT =============
+          // Only the LAST zone to stop heating/cooling should purge
+          // Other zones go to OFF immediately if other zones are still active
           unsigned long now_ms = millis();
           const unsigned long PURGE_DURATION_MS = 300000; // 5 minutes
 
-          // Zone 1 purge logic
+          // Check current state of each zone
           bool z1_was_heating = (id(z1_state) == ZONE_HEATING_STAGE1 || id(z1_state) == ZONE_HEATING_STAGE2);
           bool z1_was_cooling = (id(z1_state) == ZONE_COOLING_STAGE1 || id(z1_state) == ZONE_COOLING_STAGE2);
           bool z1_is_heating = (z1_state_new == ZONE_HEATING_STAGE1 || z1_state_new == ZONE_HEATING_STAGE2);
           bool z1_is_cooling = (z1_state_new == ZONE_COOLING_STAGE1 || z1_state_new == ZONE_COOLING_STAGE2);
           
-          // Start purge when transitioning from heating/cooling to another state
+          bool z2_was_heating = (id(z2_state) == ZONE_HEATING_STAGE1 || id(z2_state) == ZONE_HEATING_STAGE2);
+          bool z2_was_cooling = (id(z2_state) == ZONE_COOLING_STAGE1 || id(z2_state) == ZONE_COOLING_STAGE2);
+          bool z2_is_heating = (z2_state_new == ZONE_HEATING_STAGE1 || z2_state_new == ZONE_HEATING_STAGE2);
+          bool z2_is_cooling = (z2_state_new == ZONE_COOLING_STAGE1 || z2_state_new == ZONE_COOLING_STAGE2);
+          
+          bool z3_was_heating = (id(z3_state) == ZONE_HEATING_STAGE1 || id(z3_state) == ZONE_HEATING_STAGE2);
+          bool z3_was_cooling = (id(z3_state) == ZONE_COOLING_STAGE1 || id(z3_state) == ZONE_COOLING_STAGE2);
+          bool z3_is_heating = (z3_state_new == ZONE_HEATING_STAGE1 || z3_state_new == ZONE_HEATING_STAGE2);
+          bool z3_is_cooling = (z3_state_new == ZONE_COOLING_STAGE1 || z3_state_new == ZONE_COOLING_STAGE2);
+          
+          bool z4_was_heating = (id(z4_state) == ZONE_HEATING_STAGE1 || id(z4_state) == ZONE_HEATING_STAGE2);
+          bool z4_was_cooling = (id(z4_state) == ZONE_COOLING_STAGE1 || id(z4_state) == ZONE_COOLING_STAGE2);
+          bool z4_is_heating = (z4_state_new == ZONE_HEATING_STAGE1 || z4_state_new == ZONE_HEATING_STAGE2);
+          bool z4_is_cooling = (z4_state_new == ZONE_COOLING_STAGE1 || z4_state_new == ZONE_COOLING_STAGE2);
+          
+          bool z5_was_heating = (id(z5_state) == ZONE_HEATING_STAGE1 || id(z5_state) == ZONE_HEATING_STAGE2);
+          bool z5_was_cooling = (id(z5_state) == ZONE_COOLING_STAGE1 || id(z5_state) == ZONE_COOLING_STAGE2);
+          bool z5_is_heating = (z5_state_new == ZONE_HEATING_STAGE1 || z5_state_new == ZONE_HEATING_STAGE2);
+          bool z5_is_cooling = (z5_state_new == ZONE_COOLING_STAGE1 || z5_state_new == ZONE_COOLING_STAGE2);
+          
+          bool z6_was_heating = (id(z6_state) == ZONE_HEATING_STAGE1 || id(z6_state) == ZONE_HEATING_STAGE2);
+          bool z6_was_cooling = (id(z6_state) == ZONE_COOLING_STAGE1 || id(z6_state) == ZONE_COOLING_STAGE2);
+          bool z6_is_heating = (z6_state_new == ZONE_HEATING_STAGE1 || z6_state_new == ZONE_HEATING_STAGE2);
+          bool z6_is_cooling = (z6_state_new == ZONE_COOLING_STAGE1 || z6_state_new == ZONE_COOLING_STAGE2);
+
+          // Count how many zones are CURRENTLY (in new state) heating or cooling
+          int heating_zones_count = 0;
+          int cooling_zones_count = 0;
+          
+          if (z1_is_heating) heating_zones_count++;
+          if (z2_is_heating) heating_zones_count++;
+          if (z3_is_heating) heating_zones_count++;
+          if (z4_is_heating) heating_zones_count++;
+          if (z5_is_heating) heating_zones_count++;
+          if (z6_is_heating) heating_zones_count++;
+          
+          if (z1_is_cooling) cooling_zones_count++;
+          if (z2_is_cooling) cooling_zones_count++;
+          if (z3_is_cooling) cooling_zones_count++;
+          if (z4_is_cooling) cooling_zones_count++;
+          if (z5_is_cooling) cooling_zones_count++;
+          if (z6_is_cooling) cooling_zones_count++;
+
+          // Zone 1 purge logic
           if ((z1_was_heating || z1_was_cooling) && !z1_is_heating && !z1_is_cooling && z1_state_new != ZONE_ERROR) {
-            id(z1_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            // This zone is transitioning from heating/cooling to OFF
+            bool other_zones_active = false;
+            if (z1_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z1_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              // Other zones still active - go directly to OFF, cancel any pending purge
+              id(z1_purge_end_ms) = 0;
+              z1_state_new = ZONE_OFF;
+            } else {
+              // This is the LAST zone - start purge cycle
+              id(z1_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           // Apply purge state if timer active
           if (id(z1_purge_end_ms) > now_ms && z1_state_new != ZONE_ERROR) {
             z1_state_new = ZONE_PURGE;
           } else if (id(z1_purge_end_ms) <= now_ms && id(z1_purge_end_ms) != 0) {
-            id(z1_purge_end_ms) = 0; // Clear expired timer
+            id(z1_purge_end_ms) = 0;
           }
 
           // Zone 2 purge logic
-          bool z2_was_heating = (id(z2_state) == ZONE_HEATING_STAGE1 || id(z2_state) == ZONE_HEATING_STAGE2);
-          bool z2_was_cooling = (id(z2_state) == ZONE_COOLING_STAGE1 || id(z2_state) == ZONE_COOLING_STAGE2);
-          bool z2_is_heating = (z2_state_new == ZONE_HEATING_STAGE1 || z2_state_new == ZONE_HEATING_STAGE2);
-          bool z2_is_cooling = (z2_state_new == ZONE_COOLING_STAGE1 || z2_state_new == ZONE_COOLING_STAGE2);
-          
           if ((z2_was_heating || z2_was_cooling) && !z2_is_heating && !z2_is_cooling && z2_state_new != ZONE_ERROR) {
-            id(z2_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            bool other_zones_active = false;
+            if (z2_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z2_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              id(z2_purge_end_ms) = 0;
+              z2_state_new = ZONE_OFF;
+            } else {
+              id(z2_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           if (id(z2_purge_end_ms) > now_ms && z2_state_new != ZONE_ERROR) {
@@ -249,13 +309,17 @@ interval:
           }
 
           // Zone 3 purge logic
-          bool z3_was_heating = (id(z3_state) == ZONE_HEATING_STAGE1 || id(z3_state) == ZONE_HEATING_STAGE2);
-          bool z3_was_cooling = (id(z3_state) == ZONE_COOLING_STAGE1 || id(z3_state) == ZONE_COOLING_STAGE2);
-          bool z3_is_heating = (z3_state_new == ZONE_HEATING_STAGE1 || z3_state_new == ZONE_HEATING_STAGE2);
-          bool z3_is_cooling = (z3_state_new == ZONE_COOLING_STAGE1 || z3_state_new == ZONE_COOLING_STAGE2);
-          
           if ((z3_was_heating || z3_was_cooling) && !z3_is_heating && !z3_is_cooling && z3_state_new != ZONE_ERROR) {
-            id(z3_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            bool other_zones_active = false;
+            if (z3_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z3_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              id(z3_purge_end_ms) = 0;
+              z3_state_new = ZONE_OFF;
+            } else {
+              id(z3_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           if (id(z3_purge_end_ms) > now_ms && z3_state_new != ZONE_ERROR) {
@@ -265,13 +329,17 @@ interval:
           }
 
           // Zone 4 purge logic
-          bool z4_was_heating = (id(z4_state) == ZONE_HEATING_STAGE1 || id(z4_state) == ZONE_HEATING_STAGE2);
-          bool z4_was_cooling = (id(z4_state) == ZONE_COOLING_STAGE1 || id(z4_state) == ZONE_COOLING_STAGE2);
-          bool z4_is_heating = (z4_state_new == ZONE_HEATING_STAGE1 || z4_state_new == ZONE_HEATING_STAGE2);
-          bool z4_is_cooling = (z4_state_new == ZONE_COOLING_STAGE1 || z4_state_new == ZONE_COOLING_STAGE2);
-          
           if ((z4_was_heating || z4_was_cooling) && !z4_is_heating && !z4_is_cooling && z4_state_new != ZONE_ERROR) {
-            id(z4_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            bool other_zones_active = false;
+            if (z4_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z4_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              id(z4_purge_end_ms) = 0;
+              z4_state_new = ZONE_OFF;
+            } else {
+              id(z4_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           if (id(z4_purge_end_ms) > now_ms && z4_state_new != ZONE_ERROR) {
@@ -281,13 +349,17 @@ interval:
           }
 
           // Zone 5 purge logic
-          bool z5_was_heating = (id(z5_state) == ZONE_HEATING_STAGE1 || id(z5_state) == ZONE_HEATING_STAGE2);
-          bool z5_was_cooling = (id(z5_state) == ZONE_COOLING_STAGE1 || id(z5_state) == ZONE_COOLING_STAGE2);
-          bool z5_is_heating = (z5_state_new == ZONE_HEATING_STAGE1 || z5_state_new == ZONE_HEATING_STAGE2);
-          bool z5_is_cooling = (z5_state_new == ZONE_COOLING_STAGE1 || z5_state_new == ZONE_COOLING_STAGE2);
-          
           if ((z5_was_heating || z5_was_cooling) && !z5_is_heating && !z5_is_cooling && z5_state_new != ZONE_ERROR) {
-            id(z5_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            bool other_zones_active = false;
+            if (z5_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z5_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              id(z5_purge_end_ms) = 0;
+              z5_state_new = ZONE_OFF;
+            } else {
+              id(z5_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           if (id(z5_purge_end_ms) > now_ms && z5_state_new != ZONE_ERROR) {
@@ -297,13 +369,17 @@ interval:
           }
 
           // Zone 6 purge logic
-          bool z6_was_heating = (id(z6_state) == ZONE_HEATING_STAGE1 || id(z6_state) == ZONE_HEATING_STAGE2);
-          bool z6_was_cooling = (id(z6_state) == ZONE_COOLING_STAGE1 || id(z6_state) == ZONE_COOLING_STAGE2);
-          bool z6_is_heating = (z6_state_new == ZONE_HEATING_STAGE1 || z6_state_new == ZONE_HEATING_STAGE2);
-          bool z6_is_cooling = (z6_state_new == ZONE_COOLING_STAGE1 || z6_state_new == ZONE_COOLING_STAGE2);
-          
           if ((z6_was_heating || z6_was_cooling) && !z6_is_heating && !z6_is_cooling && z6_state_new != ZONE_ERROR) {
-            id(z6_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            bool other_zones_active = false;
+            if (z6_was_heating && heating_zones_count > 0) other_zones_active = true;
+            if (z6_was_cooling && cooling_zones_count > 0) other_zones_active = true;
+            
+            if (other_zones_active) {
+              id(z6_purge_end_ms) = 0;
+              z6_state_new = ZONE_OFF;
+            } else {
+              id(z6_purge_end_ms) = now_ms + PURGE_DURATION_MS;
+            }
           }
           
           if (id(z6_purge_end_ms) > now_ms && z6_state_new != ZONE_ERROR) {

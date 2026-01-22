@@ -83,3 +83,12 @@ globals:
   - id: global_all_zone_count
     type: int
     initial_value: '0'
+  - id: global_purge_pending
+    type: bool
+    initial_value: 'false'
+  - id: global_purge_end_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: last_active_mode
+    type: int
+    initial_value: '0'
