@@ -34,3 +34,22 @@ mcp23017:
     address: 0x21
   - id: 'mcp23017_0x22'
     address: 0x22
+
+# Configuration Number entity for Short Cycle Protection
+number:
+  - platform: template
+    name: "Min Cycle Time"
+    id: min_cycle_time
+    optimistic: true
+    min_value: 0
+    max_value: 1800
+    step: 60
+    unit_of_measurement: "s"
+    mode: slider
+    icon: "mdi:timer-outline"
+    initial_value: 480
+    on_value:
+      then:
+        - lambda: |-
+            id(min_cycle_time_ms) = (unsigned long)(x * 1000);
+            ESP_LOGI("ShortCycleProtection", "Min cycle time set to %.0f seconds (%.0f ms)", x, x * 1000);

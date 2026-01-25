@@ -110,3 +110,43 @@ globals:
   - id: last_active_mode
     type: int
     initial_value: '0'
+  # Short Cycle Protection Variables
+  - id: min_cycle_time_ms
+    type: unsigned long
+    initial_value: '480000'  # Default: 8 minutes (8 * 60 * 1000 ms)
+  - id: z1_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z2_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z3_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z4_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z5_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z6_active_start_ms
+    type: unsigned long
+    initial_value: '0'
+  - id: z1_short_cycle_protection
+    type: bool
+    initial_value: 'false'
+  - id: z2_short_cycle_protection
+    type: bool
+    initial_value: 'false'
+  - id: z3_short_cycle_protection
+    type: bool
+    initial_value: 'false'
+  - id: z4_short_cycle_protection
+    type: bool
+    initial_value: 'false'
+  - id: z5_short_cycle_protection
+    type: bool
+    initial_value: 'false'
+  - id: z6_short_cycle_protection
+    type: bool
+    initial_value: 'false'
