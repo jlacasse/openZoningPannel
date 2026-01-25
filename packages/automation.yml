@@ -323,158 +323,278 @@ interval:
           // Handle ERROR state - immediately clear protection and reset timers
           if (z1_state_new == ZONE_ERROR) {
             id(z1_active_start_ms) = 0;
-            id(z1_short_cycle_protection) = false;
+            if (id(z1_short_cycle_protection)) {
+              id(z1_short_cycle_protection) = false;
+              id(z1_protection_status).update();
+            }
           }
           if (z2_state_new == ZONE_ERROR) {
             id(z2_active_start_ms) = 0;
-            id(z2_short_cycle_protection) = false;
+            if (id(z2_short_cycle_protection)) {
+              id(z2_short_cycle_protection) = false;
+              id(z2_protection_status).update();
+            }
           }
           if (z3_state_new == ZONE_ERROR) {
             id(z3_active_start_ms) = 0;
-            id(z3_short_cycle_protection) = false;
+            if (id(z3_short_cycle_protection)) {
+              id(z3_short_cycle_protection) = false;
+              id(z3_protection_status).update();
+            }
           }
           if (z4_state_new == ZONE_ERROR) {
             id(z4_active_start_ms) = 0;
-            id(z4_short_cycle_protection) = false;
+            if (id(z4_short_cycle_protection)) {
+              id(z4_short_cycle_protection) = false;
+              id(z4_protection_status).update();
+            }
           }
           if (z5_state_new == ZONE_ERROR) {
             id(z5_active_start_ms) = 0;
-            id(z5_short_cycle_protection) = false;
+            if (id(z5_short_cycle_protection)) {
+              id(z5_short_cycle_protection) = false;
+              id(z5_protection_status).update();
+            }
           }
           if (z6_state_new == ZONE_ERROR) {
             id(z6_active_start_ms) = 0;
-            id(z6_short_cycle_protection) = false;
+            if (id(z6_short_cycle_protection)) {
+              id(z6_short_cycle_protection) = false;
+              id(z6_protection_status).update();
+            }
           }
           
           // Enforce minimum cycle time for each zone
           unsigned long current_time = millis();
           
           // Zone 1: Check if trying to transition from ACTIVE to OFF
+          bool z1_protection_changed = false;
           if ((id(z1_state) == ZONE_COOLING_STAGE1 || id(z1_state) == ZONE_COOLING_STAGE2 || id(z1_state) == ZONE_HEATING_STAGE1 || id(z1_state) == ZONE_HEATING_STAGE2) && 
               z1_state_new == ZONE_OFF && z1_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z1_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               // Force zone to stay in current active state
               z1_state_new = id(z1_state);
-              id(z1_short_cycle_protection) = true;
+              if (!id(z1_short_cycle_protection)) {
+                id(z1_short_cycle_protection) = true;
+                z1_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 1 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z1_short_cycle_protection) = false;
+              if (id(z1_short_cycle_protection)) {
+                id(z1_short_cycle_protection) = false;
+                z1_protection_changed = true;
+              }
               id(z1_active_start_ms) = 0;
             }
           } else if (z1_state_new != ZONE_OFF && z1_state_new != ZONE_ERROR) {
             // Zone is staying active, keep protection flag based on elapsed time
             if (id(z1_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z1_active_start_ms);
-              id(z1_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z1_short_cycle_protection) != new_protection) {
+                id(z1_short_cycle_protection) = new_protection;
+                z1_protection_changed = true;
+              }
             }
           } else {
-            id(z1_short_cycle_protection) = false;
+            if (id(z1_short_cycle_protection)) {
+              id(z1_short_cycle_protection) = false;
+              z1_protection_changed = true;
+            }
+          }
+          if (z1_protection_changed) {
+            id(z1_protection_status).update();
           }
           
           // Zone 2
+          bool z2_protection_changed = false;
           if ((id(z2_state) == ZONE_COOLING_STAGE1 || id(z2_state) == ZONE_COOLING_STAGE2 || id(z2_state) == ZONE_HEATING_STAGE1 || id(z2_state) == ZONE_HEATING_STAGE2) && 
               z2_state_new == ZONE_OFF && z2_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z2_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               z2_state_new = id(z2_state);
-              id(z2_short_cycle_protection) = true;
+              if (!id(z2_short_cycle_protection)) {
+                id(z2_short_cycle_protection) = true;
+                z2_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 2 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z2_short_cycle_protection) = false;
+              if (id(z2_short_cycle_protection)) {
+                id(z2_short_cycle_protection) = false;
+                z2_protection_changed = true;
+              }
               id(z2_active_start_ms) = 0;
             }
           } else if (z2_state_new != ZONE_OFF && z2_state_new != ZONE_ERROR) {
             if (id(z2_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z2_active_start_ms);
-              id(z2_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z2_short_cycle_protection) != new_protection) {
+                id(z2_short_cycle_protection) = new_protection;
+                z2_protection_changed = true;
+              }
             }
           } else {
-            id(z2_short_cycle_protection) = false;
+            if (id(z2_short_cycle_protection)) {
+              id(z2_short_cycle_protection) = false;
+              z2_protection_changed = true;
+            }
+          }
+          if (z2_protection_changed) {
+            id(z2_protection_status).update();
           }
           
           // Zone 3
+          bool z3_protection_changed = false;
           if ((id(z3_state) == ZONE_COOLING_STAGE1 || id(z3_state) == ZONE_COOLING_STAGE2 || id(z3_state) == ZONE_HEATING_STAGE1 || id(z3_state) == ZONE_HEATING_STAGE2) && 
               z3_state_new == ZONE_OFF && z3_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z3_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               z3_state_new = id(z3_state);
-              id(z3_short_cycle_protection) = true;
+              if (!id(z3_short_cycle_protection)) {
+                id(z3_short_cycle_protection) = true;
+                z3_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 3 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z3_short_cycle_protection) = false;
+              if (id(z3_short_cycle_protection)) {
+                id(z3_short_cycle_protection) = false;
+                z3_protection_changed = true;
+              }
               id(z3_active_start_ms) = 0;
             }
           } else if (z3_state_new != ZONE_OFF && z3_state_new != ZONE_ERROR) {
             if (id(z3_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z3_active_start_ms);
-              id(z3_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z3_short_cycle_protection) != new_protection) {
+                id(z3_short_cycle_protection) = new_protection;
+                z3_protection_changed = true;
+              }
             }
           } else {
-            id(z3_short_cycle_protection) = false;
+            if (id(z3_short_cycle_protection)) {
+              id(z3_short_cycle_protection) = false;
+              z3_protection_changed = true;
+            }
+          }
+          if (z3_protection_changed) {
+            id(z3_protection_status).update();
           }
           
           // Zone 4
+          bool z4_protection_changed = false;
           if ((id(z4_state) == ZONE_COOLING_STAGE1 || id(z4_state) == ZONE_COOLING_STAGE2 || id(z4_state) == ZONE_HEATING_STAGE1 || id(z4_state) == ZONE_HEATING_STAGE2) && 
               z4_state_new == ZONE_OFF && z4_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z4_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               z4_state_new = id(z4_state);
-              id(z4_short_cycle_protection) = true;
+              if (!id(z4_short_cycle_protection)) {
+                id(z4_short_cycle_protection) = true;
+                z4_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 4 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z4_short_cycle_protection) = false;
+              if (id(z4_short_cycle_protection)) {
+                id(z4_short_cycle_protection) = false;
+                z4_protection_changed = true;
+              }
               id(z4_active_start_ms) = 0;
             }
           } else if (z4_state_new != ZONE_OFF && z4_state_new != ZONE_ERROR) {
             if (id(z4_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z4_active_start_ms);
-              id(z4_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z4_short_cycle_protection) != new_protection) {
+                id(z4_short_cycle_protection) = new_protection;
+                z4_protection_changed = true;
+              }
             }
           } else {
-            id(z4_short_cycle_protection) = false;
+            if (id(z4_short_cycle_protection)) {
+              id(z4_short_cycle_protection) = false;
+              z4_protection_changed = true;
+            }
+          }
+          if (z4_protection_changed) {
+            id(z4_protection_status).update();
           }
           
           // Zone 5
+          bool z5_protection_changed = false;
           if ((id(z5_state) == ZONE_COOLING_STAGE1 || id(z5_state) == ZONE_COOLING_STAGE2 || id(z5_state) == ZONE_HEATING_STAGE1 || id(z5_state) == ZONE_HEATING_STAGE2) && 
               z5_state_new == ZONE_OFF && z5_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z5_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               z5_state_new = id(z5_state);
-              id(z5_short_cycle_protection) = true;
+              if (!id(z5_short_cycle_protection)) {
+                id(z5_short_cycle_protection) = true;
+                z5_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 5 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z5_short_cycle_protection) = false;
+              if (id(z5_short_cycle_protection)) {
+                id(z5_short_cycle_protection) = false;
+                z5_protection_changed = true;
+              }
               id(z5_active_start_ms) = 0;
             }
           } else if (z5_state_new != ZONE_OFF && z5_state_new != ZONE_ERROR) {
             if (id(z5_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z5_active_start_ms);
-              id(z5_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z5_short_cycle_protection) != new_protection) {
+                id(z5_short_cycle_protection) = new_protection;
+                z5_protection_changed = true;
+              }
             }
           } else {
-            id(z5_short_cycle_protection) = false;
+            if (id(z5_short_cycle_protection)) {
+              id(z5_short_cycle_protection) = false;
+              z5_protection_changed = true;
+            }
+          }
+          if (z5_protection_changed) {
+            id(z5_protection_status).update();
           }
           
           // Zone 6
+          bool z6_protection_changed = false;
           if ((id(z6_state) == ZONE_COOLING_STAGE1 || id(z6_state) == ZONE_COOLING_STAGE2 || id(z6_state) == ZONE_HEATING_STAGE1 || id(z6_state) == ZONE_HEATING_STAGE2) && 
               z6_state_new == ZONE_OFF && z6_state_new != ZONE_ERROR) {
             unsigned long elapsed = current_time - id(z6_active_start_ms);
             if (elapsed < id(min_cycle_time_ms)) {
               z6_state_new = id(z6_state);
-              id(z6_short_cycle_protection) = true;
+              if (!id(z6_short_cycle_protection)) {
+                id(z6_short_cycle_protection) = true;
+                z6_protection_changed = true;
+              }
               ESP_LOGW(TAG_SCP, "Zone 6 short cycle protection active - elapsed: %lu ms / required: %lu ms", elapsed, id(min_cycle_time_ms));
             } else {
-              id(z6_short_cycle_protection) = false;
+              if (id(z6_short_cycle_protection)) {
+                id(z6_short_cycle_protection) = false;
+                z6_protection_changed = true;
+              }
               id(z6_active_start_ms) = 0;
             }
           } else if (z6_state_new != ZONE_OFF && z6_state_new != ZONE_ERROR) {
             if (id(z6_active_start_ms) > 0) {
               unsigned long elapsed = current_time - id(z6_active_start_ms);
-              id(z6_short_cycle_protection) = (elapsed < id(min_cycle_time_ms));
+              bool new_protection = (elapsed < id(min_cycle_time_ms));
+              if (id(z6_short_cycle_protection) != new_protection) {
+                id(z6_short_cycle_protection) = new_protection;
+                z6_protection_changed = true;
+              }
             }
           } else {
-            id(z6_short_cycle_protection) = false;
+            if (id(z6_short_cycle_protection)) {
+              id(z6_short_cycle_protection) = false;
+              z6_protection_changed = true;
+            }
+          }
+          if (z6_protection_changed) {
+            id(z6_protection_status).update();
           }
 
           // ============= PASS 2: INTELLIGENT MULTI-ZONE PURGE MANAGEMENT =============

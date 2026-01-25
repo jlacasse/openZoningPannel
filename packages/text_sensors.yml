@@ -171,7 +171,7 @@ text_sensor:
   - platform: template
     name: "Zone 1 Protection Status"
     id: z1_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z1_short_cycle_protection)) {
         return {"Short Cycle Protection"};
@@ -182,7 +182,7 @@ text_sensor:
   - platform: template
     name: "Zone 2 Protection Status"
     id: z2_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z2_short_cycle_protection)) {
         return {"Short Cycle Protection"};
@@ -193,7 +193,7 @@ text_sensor:
   - platform: template
     name: "Zone 3 Protection Status"
     id: z3_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z3_short_cycle_protection)) {
         return {"Short Cycle Protection"};
@@ -204,7 +204,7 @@ text_sensor:
   - platform: template
     name: "Zone 4 Protection Status"
     id: z4_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z4_short_cycle_protection)) {
         return {"Short Cycle Protection"};
@@ -215,7 +215,7 @@ text_sensor:
   - platform: template
     name: "Zone 5 Protection Status"
     id: z5_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z5_short_cycle_protection)) {
         return {"Short Cycle Protection"};
@@ -226,7 +226,7 @@ text_sensor:
   - platform: template
     name: "Zone 6 Protection Status"
     id: z6_protection_status
-    update_interval: 5s
+    update_interval: never
     lambda: |-
       if (id(z6_short_cycle_protection)) {
         return {"Short Cycle Protection"};
