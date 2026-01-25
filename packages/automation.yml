@@ -29,6 +29,20 @@ esphome:
             id(z6_state) = ZONE_OFF;
             id(z6_state_text).update();
 
+            // Initialize short cycle protection status (all Normal on boot)
+            id(z1_short_cycle_protection) = false;
+            id(z1_protection_status).update();
+            id(z2_short_cycle_protection) = false;
+            id(z2_protection_status).update();
+            id(z3_short_cycle_protection) = false;
+            id(z3_protection_status).update();
+            id(z4_short_cycle_protection) = false;
+            id(z4_protection_status).update();
+            id(z5_short_cycle_protection) = false;
+            id(z5_protection_status).update();
+            id(z6_short_cycle_protection) = false;
+            id(z6_protection_status).update();
+
             // Initialize damper states (all open on boot)
             id(z1_damper_state) = 1;
             id(z2_damper_state) = 1;
