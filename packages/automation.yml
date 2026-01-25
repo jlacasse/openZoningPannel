@@ -29,20 +29,6 @@ esphome:
             id(z6_state) = ZONE_OFF;
             id(z6_state_text).update();
 
-            // Initialize short cycle protection status (all Normal on boot)
-            id(z1_short_cycle_protection) = false;
-            id(z1_protection_status).update();
-            id(z2_short_cycle_protection) = false;
-            id(z2_protection_status).update();
-            id(z3_short_cycle_protection) = false;
-            id(z3_protection_status).update();
-            id(z4_short_cycle_protection) = false;
-            id(z4_protection_status).update();
-            id(z5_short_cycle_protection) = false;
-            id(z5_protection_status).update();
-            id(z6_short_cycle_protection) = false;
-            id(z6_protection_status).update();
-
             // Initialize damper states (all open on boot)
             id(z1_damper_state) = 1;
             id(z2_damper_state) = 1;
@@ -339,42 +325,36 @@ interval:
             id(z1_active_start_ms) = 0;
             if (id(z1_short_cycle_protection)) {
               id(z1_short_cycle_protection) = false;
-              id(z1_protection_status).update();
             }
           }
           if (z2_state_new == ZONE_ERROR) {
             id(z2_active_start_ms) = 0;
             if (id(z2_short_cycle_protection)) {
               id(z2_short_cycle_protection) = false;
-              id(z2_protection_status).update();
             }
           }
           if (z3_state_new == ZONE_ERROR) {
             id(z3_active_start_ms) = 0;
             if (id(z3_short_cycle_protection)) {
               id(z3_short_cycle_protection) = false;
-              id(z3_protection_status).update();
             }
           }
           if (z4_state_new == ZONE_ERROR) {
             id(z4_active_start_ms) = 0;
             if (id(z4_short_cycle_protection)) {
               id(z4_short_cycle_protection) = false;
-              id(z4_protection_status).update();
             }
           }
           if (z5_state_new == ZONE_ERROR) {
             id(z5_active_start_ms) = 0;
             if (id(z5_short_cycle_protection)) {
               id(z5_short_cycle_protection) = false;
-              id(z5_protection_status).update();
             }
           }
           if (z6_state_new == ZONE_ERROR) {
             id(z6_active_start_ms) = 0;
             if (id(z6_short_cycle_protection)) {
               id(z6_short_cycle_protection) = false;
-              id(z6_protection_status).update();
             }
           }
           
@@ -417,9 +397,6 @@ interval:
               z1_protection_changed = true;
             }
           }
-          if (z1_protection_changed) {
-            id(z1_protection_status).update();
-          }
           
           // Zone 2
           bool z2_protection_changed = false;
@@ -454,9 +431,6 @@ interval:
               id(z2_short_cycle_protection) = false;
               z2_protection_changed = true;
             }
-          }
-          if (z2_protection_changed) {
-            id(z2_protection_status).update();
           }
           
           // Zone 3
@@ -493,9 +467,6 @@ interval:
               z3_protection_changed = true;
             }
           }
-          if (z3_protection_changed) {
-            id(z3_protection_status).update();
-          }
           
           // Zone 4
           bool z4_protection_changed = false;
@@ -530,9 +501,6 @@ interval:
               id(z4_short_cycle_protection) = false;
               z4_protection_changed = true;
             }
-          }
-          if (z4_protection_changed) {
-            id(z4_protection_status).update();
           }
           
           // Zone 5
@@ -569,9 +537,6 @@ interval:
               z5_protection_changed = true;
             }
           }
-          if (z5_protection_changed) {
-            id(z5_protection_status).update();
-          }
           
           // Zone 6
           bool z6_protection_changed = false;
@@ -606,9 +571,6 @@ interval:
               id(z6_short_cycle_protection) = false;
               z6_protection_changed = true;
             }
-          }
-          if (z6_protection_changed) {
-            id(z6_protection_status).update();
           }
 
           // ============= PASS 2: INTELLIGENT MULTI-ZONE PURGE MANAGEMENT =============
