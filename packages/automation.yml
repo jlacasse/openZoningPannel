@@ -66,6 +66,9 @@ interval:
           #define ZONE_WAIT 7
           #define ZONE_ERROR 99
 
+          // Define logging tag
+          static const char* TAG = "ZoneError";
+
           // Reset error flag at the beginning of each cycle
           id(zone_error_flag) = false;
 
@@ -74,23 +77,36 @@ interval:
           
           // Check for error condition: Y1 or Y2 active without G (DANGER: no fan with compressor)
           if ((id(Z1_Y1).state || id(Z1_Y2).state) && !id(Z1_G).state) {
-            z1_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z1_error_count)++;
+            if (id(z1_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 1 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z1_Y1).state, id(Z1_Y2).state, id(Z1_G).state);
+            }
+            if (id(z1_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 1 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z1_Y1).state, id(Z1_Y2).state, id(Z1_G).state);
+              z1_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z1_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 1 error cleared (was at count: %d)", id(z1_error_count));
+              id(z1_error_count) = 0;
+            }
           }
+          
           // Priority: Y2 > Y1 (Stage 2 takes precedence if both active)
-          else if (id(Z1_Y2).state && id(Z1_G).state && id(Z1_OB).state) {
+          if (z1_state_new != ZONE_ERROR && id(Z1_Y2).state && id(Z1_G).state && id(Z1_OB).state) {
             z1_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z1_Y1).state && id(Z1_G).state && id(Z1_OB).state) {
+          else if (z1_state_new != ZONE_ERROR && id(Z1_Y1).state && id(Z1_G).state && id(Z1_OB).state) {
             z1_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z1_Y2).state && id(Z1_G).state && !id(Z1_OB).state) {
+          else if (z1_state_new != ZONE_ERROR && id(Z1_Y2).state && id(Z1_G).state && !id(Z1_OB).state) {
             z1_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z1_Y1).state && id(Z1_G).state && !id(Z1_OB).state) {
+          else if (z1_state_new != ZONE_ERROR && id(Z1_Y1).state && id(Z1_G).state && !id(Z1_OB).state) {
             z1_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z1_G).state) {
+          else if (z1_state_new != ZONE_ERROR && id(Z1_G).state) {
             z1_state_new = ZONE_FAN_ONLY;
           }
 
@@ -98,22 +114,35 @@ interval:
           int z2_state_new = ZONE_OFF;
           
           if ((id(Z2_Y1).state || id(Z2_Y2).state) && !id(Z2_G).state) {
-            z2_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z2_error_count)++;
+            if (id(z2_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 2 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z2_Y1).state, id(Z2_Y2).state, id(Z2_G).state);
+            }
+            if (id(z2_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 2 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z2_Y1).state, id(Z2_Y2).state, id(Z2_G).state);
+              z2_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z2_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 2 error cleared (was at count: %d)", id(z2_error_count));
+              id(z2_error_count) = 0;
+            }
           }
-          else if (id(Z2_Y2).state && id(Z2_G).state && id(Z2_OB).state) {
+          
+          if (z2_state_new != ZONE_ERROR && id(Z2_Y2).state && id(Z2_G).state && id(Z2_OB).state) {
             z2_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z2_Y1).state && id(Z2_G).state && id(Z2_OB).state) {
+          else if (z2_state_new != ZONE_ERROR && id(Z2_Y1).state && id(Z2_G).state && id(Z2_OB).state) {
             z2_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z2_Y2).state && id(Z2_G).state && !id(Z2_OB).state) {
+          else if (z2_state_new != ZONE_ERROR && id(Z2_Y2).state && id(Z2_G).state && !id(Z2_OB).state) {
             z2_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z2_Y1).state && id(Z2_G).state && !id(Z2_OB).state) {
+          else if (z2_state_new != ZONE_ERROR && id(Z2_Y1).state && id(Z2_G).state && !id(Z2_OB).state) {
             z2_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z2_G).state) {
+          else if (z2_state_new != ZONE_ERROR && id(Z2_G).state) {
             z2_state_new = ZONE_FAN_ONLY;
           }
 
@@ -121,22 +150,35 @@ interval:
           int z3_state_new = ZONE_OFF;
           
           if ((id(Z3_Y1).state || id(Z3_Y2).state) && !id(Z3_G).state) {
-            z3_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z3_error_count)++;
+            if (id(z3_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 3 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z3_Y1).state, id(Z3_Y2).state, id(Z3_G).state);
+            }
+            if (id(z3_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 3 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z3_Y1).state, id(Z3_Y2).state, id(Z3_G).state);
+              z3_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z3_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 3 error cleared (was at count: %d)", id(z3_error_count));
+              id(z3_error_count) = 0;
+            }
           }
-          else if (id(Z3_Y2).state && id(Z3_G).state && id(Z3_OB).state) {
+          
+          if (z3_state_new != ZONE_ERROR && id(Z3_Y2).state && id(Z3_G).state && id(Z3_OB).state) {
             z3_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z3_Y1).state && id(Z3_G).state && id(Z3_OB).state) {
+          else if (z3_state_new != ZONE_ERROR && id(Z3_Y1).state && id(Z3_G).state && id(Z3_OB).state) {
             z3_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z3_Y2).state && id(Z3_G).state && !id(Z3_OB).state) {
+          else if (z3_state_new != ZONE_ERROR && id(Z3_Y2).state && id(Z3_G).state && !id(Z3_OB).state) {
             z3_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z3_Y1).state && id(Z3_G).state && !id(Z3_OB).state) {
+          else if (z3_state_new != ZONE_ERROR && id(Z3_Y1).state && id(Z3_G).state && !id(Z3_OB).state) {
             z3_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z3_G).state) {
+          else if (z3_state_new != ZONE_ERROR && id(Z3_G).state) {
             z3_state_new = ZONE_FAN_ONLY;
           }
 
@@ -144,22 +186,35 @@ interval:
           int z4_state_new = ZONE_OFF;
           
           if ((id(Z4_Y1).state || id(Z4_Y2).state) && !id(Z4_G).state) {
-            z4_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z4_error_count)++;
+            if (id(z4_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 4 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z4_Y1).state, id(Z4_Y2).state, id(Z4_G).state);
+            }
+            if (id(z4_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 4 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z4_Y1).state, id(Z4_Y2).state, id(Z4_G).state);
+              z4_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z4_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 4 error cleared (was at count: %d)", id(z4_error_count));
+              id(z4_error_count) = 0;
+            }
           }
-          else if (id(Z4_Y2).state && id(Z4_G).state && id(Z4_OB).state) {
+          
+          if (z4_state_new != ZONE_ERROR && id(Z4_Y2).state && id(Z4_G).state && id(Z4_OB).state) {
             z4_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z4_Y1).state && id(Z4_G).state && id(Z4_OB).state) {
+          else if (z4_state_new != ZONE_ERROR && id(Z4_Y1).state && id(Z4_G).state && id(Z4_OB).state) {
             z4_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z4_Y2).state && id(Z4_G).state && !id(Z4_OB).state) {
+          else if (z4_state_new != ZONE_ERROR && id(Z4_Y2).state && id(Z4_G).state && !id(Z4_OB).state) {
             z4_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z4_Y1).state && id(Z4_G).state && !id(Z4_OB).state) {
+          else if (z4_state_new != ZONE_ERROR && id(Z4_Y1).state && id(Z4_G).state && !id(Z4_OB).state) {
             z4_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z4_G).state) {
+          else if (z4_state_new != ZONE_ERROR && id(Z4_G).state) {
             z4_state_new = ZONE_FAN_ONLY;
           }
 
@@ -167,22 +222,35 @@ interval:
           int z5_state_new = ZONE_OFF;
           
           if ((id(Z5_Y1).state || id(Z5_Y2).state) && !id(Z5_G).state) {
-            z5_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z5_error_count)++;
+            if (id(z5_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 5 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z5_Y1).state, id(Z5_Y2).state, id(Z5_G).state);
+            }
+            if (id(z5_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 5 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z5_Y1).state, id(Z5_Y2).state, id(Z5_G).state);
+              z5_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z5_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 5 error cleared (was at count: %d)", id(z5_error_count));
+              id(z5_error_count) = 0;
+            }
           }
-          else if (id(Z5_Y2).state && id(Z5_G).state && id(Z5_OB).state) {
+          
+          if (z5_state_new != ZONE_ERROR && id(Z5_Y2).state && id(Z5_G).state && id(Z5_OB).state) {
             z5_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z5_Y1).state && id(Z5_G).state && id(Z5_OB).state) {
+          else if (z5_state_new != ZONE_ERROR && id(Z5_Y1).state && id(Z5_G).state && id(Z5_OB).state) {
             z5_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z5_Y2).state && id(Z5_G).state && !id(Z5_OB).state) {
+          else if (z5_state_new != ZONE_ERROR && id(Z5_Y2).state && id(Z5_G).state && !id(Z5_OB).state) {
             z5_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z5_Y1).state && id(Z5_G).state && !id(Z5_OB).state) {
+          else if (z5_state_new != ZONE_ERROR && id(Z5_Y1).state && id(Z5_G).state && !id(Z5_OB).state) {
             z5_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z5_G).state) {
+          else if (z5_state_new != ZONE_ERROR && id(Z5_G).state) {
             z5_state_new = ZONE_FAN_ONLY;
           }
 
@@ -190,22 +258,35 @@ interval:
           int z6_state_new = ZONE_OFF;
           
           if ((id(Z6_Y1).state || id(Z6_Y2).state) && !id(Z6_G).state) {
-            z6_state_new = ZONE_ERROR;
-            id(zone_error_flag) = true;
+            id(z6_error_count)++;
+            if (id(z6_error_count) == 1) {
+              ESP_LOGW(TAG, "Zone 6 error detected (count: 1/2) - Y1:%d Y2:%d G:%d", id(Z6_Y1).state, id(Z6_Y2).state, id(Z6_G).state);
+            }
+            if (id(z6_error_count) >= 2) {
+              ESP_LOGE(TAG, "Zone 6 ERROR CONFIRMED (count: 2/2) - Y1:%d Y2:%d G:%d", id(Z6_Y1).state, id(Z6_Y2).state, id(Z6_G).state);
+              z6_state_new = ZONE_ERROR;
+              id(zone_error_flag) = true;
+            }
+          } else {
+            if (id(z6_error_count) > 0) {
+              ESP_LOGI(TAG, "Zone 6 error cleared (was at count: %d)", id(z6_error_count));
+              id(z6_error_count) = 0;
+            }
           }
-          else if (id(Z6_Y2).state && id(Z6_G).state && id(Z6_OB).state) {
+          
+          if (z6_state_new != ZONE_ERROR && id(Z6_Y2).state && id(Z6_G).state && id(Z6_OB).state) {
             z6_state_new = ZONE_HEATING_STAGE2;
           }
-          else if (id(Z6_Y1).state && id(Z6_G).state && id(Z6_OB).state) {
+          else if (z6_state_new != ZONE_ERROR && id(Z6_Y1).state && id(Z6_G).state && id(Z6_OB).state) {
             z6_state_new = ZONE_HEATING_STAGE1;
           }
-          else if (id(Z6_Y2).state && id(Z6_G).state && !id(Z6_OB).state) {
+          else if (z6_state_new != ZONE_ERROR && id(Z6_Y2).state && id(Z6_G).state && !id(Z6_OB).state) {
             z6_state_new = ZONE_COOLING_STAGE2;
           }
-          else if (id(Z6_Y1).state && id(Z6_G).state && !id(Z6_OB).state) {
+          else if (z6_state_new != ZONE_ERROR && id(Z6_Y1).state && id(Z6_G).state && !id(Z6_OB).state) {
             z6_state_new = ZONE_COOLING_STAGE1;
           }
-          else if (id(Z6_G).state) {
+          else if (z6_state_new != ZONE_ERROR && id(Z6_G).state) {
             z6_state_new = ZONE_FAN_ONLY;
           }
 
