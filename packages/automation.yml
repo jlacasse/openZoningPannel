@@ -36,20 +36,112 @@ esphome:
             id(z4_damper_state) = 1;
             id(z5_damper_state) = 1;
             id(z6_damper_state) = 1;
+        
+        # Set all dampers to open position using scripts for consistency
+        - script.execute: z1_damper_open
+        - script.execute: z2_damper_open
+        - script.execute: z3_damper_open
+        - script.execute: z4_damper_open
+        - script.execute: z5_damper_open
+        - script.execute: z6_damper_open
 
-            // Set all dampers to open position
-            id(Z1_damper_open).turn_on();
-            id(Z1_damper_close).turn_off();
-            id(Z2_damper_open).turn_on();
-            id(Z2_damper_close).turn_off();
-            id(Z3_damper_open).turn_on();
-            id(Z3_damper_close).turn_off();
-            id(Z4_damper_open).turn_on();
-            id(Z4_damper_close).turn_off();
-            id(Z5_damper_open).turn_on();
-            id(Z5_damper_close).turn_off();
-            id(Z6_damper_open).turn_on();
-            id(Z6_damper_close).turn_off();
+# Damper control scripts - provide 250ms delay for motor release
+script:
+  - id: z1_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z1_damper_close
+      - switch.turn_off: Z1_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z1_damper_open
+      
+  - id: z1_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z1_damper_open
+      - switch.turn_off: Z1_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z1_damper_close
+      
+  - id: z2_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z2_damper_close
+      - switch.turn_off: Z2_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z2_damper_open
+      
+  - id: z2_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z2_damper_open
+      - switch.turn_off: Z2_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z2_damper_close
+      
+  - id: z3_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z3_damper_close
+      - switch.turn_off: Z3_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z3_damper_open
+      
+  - id: z3_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z3_damper_open
+      - switch.turn_off: Z3_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z3_damper_close
+      
+  - id: z4_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z4_damper_close
+      - switch.turn_off: Z4_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z4_damper_open
+      
+  - id: z4_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z4_damper_open
+      - switch.turn_off: Z4_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z4_damper_close
+      
+  - id: z5_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z5_damper_close
+      - switch.turn_off: Z5_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z5_damper_open
+      
+  - id: z5_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z5_damper_open
+      - switch.turn_off: Z5_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z5_damper_close
+      
+  - id: z6_damper_open
+    mode: single
+    then:
+      - switch.turn_off: Z6_damper_close
+      - switch.turn_off: Z6_damper_open
+      - delay: 250ms
+      - switch.turn_on: Z6_damper_open
+      
+  - id: z6_damper_close
+    mode: single
+    then:
+      - switch.turn_off: Z6_damper_open
+      - switch.turn_off: Z6_damper_close
+      - delay: 250ms
+      - switch.turn_on: Z6_damper_close
 
 interval:
   - interval: 10s
@@ -892,9 +984,8 @@ interval:
           }
 
           // ============= PASS 4: DAMPER CONTROL =============
-          // Dampers require continuous activation: either OPEN or CLOSE must be ON
-          // 30-second hysteresis between state changes to avoid oscillation
-          const unsigned long DAMPER_HYSTERESIS_MS = 30000; // 30 seconds
+          // Damper scripts provide 250ms delay for motor release
+          static const char* TAG_DAMPER = "DamperControl";
           
           // Determine if all zones are OFF (special case: all dampers open)
           bool all_zones_off = (global_max_priority == 0);
@@ -902,33 +993,24 @@ interval:
           // Zone 1 damper control
           int z1_damper_target = 1; // 1=open, 0=closed
           if (z1_state_new == ZONE_WAIT || z1_state_new == ZONE_ERROR) {
-            z1_damper_target = 0; // Close damper for WAIT or ERROR
+            z1_damper_target = 0;
           } else if (all_zones_off) {
-            z1_damper_target = 1; // All dampers open when system idle
+            z1_damper_target = 1;
           } else if (z1_state_new == ZONE_OFF) {
-            z1_damper_target = 0; // Close if zone is off but others are active
+            z1_damper_target = 0;
           } else {
-            z1_damper_target = 1; // Open for active states (HEATING/COOLING/FAN/PURGE)
+            z1_damper_target = 1;
           }
           
-          // Apply damper change only if target differs and hysteresis elapsed
-          if (z1_damper_target != id(z1_damper_state) && (now_ms - id(z1_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            // Turn off both contacts briefly during transition
-            id(Z1_damper_open).turn_off();
-            id(Z1_damper_close).turn_off();
-            
-            // Update state and timestamp
+          if (z1_damper_target != id(z1_damper_state)) {
             id(z1_damper_state) = z1_damper_target;
-            id(z1_damper_change_ms) = now_ms;
-          }
-          
-          // Maintain continuous activation based on current state (only if state differs)
-          if (id(z1_damper_state) == 1) {
-            if (!id(Z1_damper_open).state) id(Z1_damper_open).turn_on();
-            if (id(Z1_damper_close).state) id(Z1_damper_close).turn_off();
-          } else {
-            if (id(Z1_damper_open).state) id(Z1_damper_open).turn_off();
-            if (!id(Z1_damper_close).state) id(Z1_damper_close).turn_on();
+            if (z1_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 1 damper opening");
+              id(z1_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 1 damper closing");
+              id(z1_damper_close).execute();
+            }
           }
 
           // Zone 2 damper control
@@ -943,19 +1025,15 @@ interval:
             z2_damper_target = 1;
           }
           
-          if (z2_damper_target != id(z2_damper_state) && (now_ms - id(z2_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            id(Z2_damper_open).turn_off();
-            id(Z2_damper_close).turn_off();
+          if (z2_damper_target != id(z2_damper_state)) {
             id(z2_damper_state) = z2_damper_target;
-            id(z2_damper_change_ms) = now_ms;
-          }
-          
-          if (id(z2_damper_state) == 1) {
-            if (!id(Z2_damper_open).state) id(Z2_damper_open).turn_on();
-            if (id(Z2_damper_close).state) id(Z2_damper_close).turn_off();
-          } else {
-            if (id(Z2_damper_open).state) id(Z2_damper_open).turn_off();
-            if (!id(Z2_damper_close).state) id(Z2_damper_close).turn_on();
+            if (z2_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 2 damper opening");
+              id(z2_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 2 damper closing");
+              id(z2_damper_close).execute();
+            }
           }
 
           // Zone 3 damper control
@@ -970,19 +1048,15 @@ interval:
             z3_damper_target = 1;
           }
           
-          if (z3_damper_target != id(z3_damper_state) && (now_ms - id(z3_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            id(Z3_damper_open).turn_off();
-            id(Z3_damper_close).turn_off();
+          if (z3_damper_target != id(z3_damper_state)) {
             id(z3_damper_state) = z3_damper_target;
-            id(z3_damper_change_ms) = now_ms;
-          }
-          
-          if (id(z3_damper_state) == 1) {
-            if (!id(Z3_damper_open).state) id(Z3_damper_open).turn_on();
-            if (id(Z3_damper_close).state) id(Z3_damper_close).turn_off();
-          } else {
-            if (id(Z3_damper_open).state) id(Z3_damper_open).turn_off();
-            if (!id(Z3_damper_close).state) id(Z3_damper_close).turn_on();
+            if (z3_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 3 damper opening");
+              id(z3_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 3 damper closing");
+              id(z3_damper_close).execute();
+            }
           }
 
           // Zone 4 damper control
@@ -997,19 +1071,15 @@ interval:
             z4_damper_target = 1;
           }
           
-          if (z4_damper_target != id(z4_damper_state) && (now_ms - id(z4_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            id(Z4_damper_open).turn_off();
-            id(Z4_damper_close).turn_off();
+          if (z4_damper_target != id(z4_damper_state)) {
             id(z4_damper_state) = z4_damper_target;
-            id(z4_damper_change_ms) = now_ms;
-          }
-          
-          if (id(z4_damper_state) == 1) {
-            if (!id(Z4_damper_open).state) id(Z4_damper_open).turn_on();
-            if (id(Z4_damper_close).state) id(Z4_damper_close).turn_off();
-          } else {
-            if (id(Z4_damper_open).state) id(Z4_damper_open).turn_off();
-            if (!id(Z4_damper_close).state) id(Z4_damper_close).turn_on();
+            if (z4_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 4 damper opening");
+              id(z4_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 4 damper closing");
+              id(z4_damper_close).execute();
+            }
           }
 
           // Zone 5 damper control
@@ -1024,19 +1094,15 @@ interval:
             z5_damper_target = 1;
           }
           
-          if (z5_damper_target != id(z5_damper_state) && (now_ms - id(z5_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            id(Z5_damper_open).turn_off();
-            id(Z5_damper_close).turn_off();
+          if (z5_damper_target != id(z5_damper_state)) {
             id(z5_damper_state) = z5_damper_target;
-            id(z5_damper_change_ms) = now_ms;
-          }
-          
-          if (id(z5_damper_state) == 1) {
-            if (!id(Z5_damper_open).state) id(Z5_damper_open).turn_on();
-            if (id(Z5_damper_close).state) id(Z5_damper_close).turn_off();
-          } else {
-            if (id(Z5_damper_open).state) id(Z5_damper_open).turn_off();
-            if (!id(Z5_damper_close).state) id(Z5_damper_close).turn_on();
+            if (z5_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 5 damper opening");
+              id(z5_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 5 damper closing");
+              id(z5_damper_close).execute();
+            }
           }
 
           // Zone 6 damper control
@@ -1051,19 +1117,15 @@ interval:
             z6_damper_target = 1;
           }
           
-          if (z6_damper_target != id(z6_damper_state) && (now_ms - id(z6_damper_change_ms)) >= DAMPER_HYSTERESIS_MS) {
-            id(Z6_damper_open).turn_off();
-            id(Z6_damper_close).turn_off();
+          if (z6_damper_target != id(z6_damper_state)) {
             id(z6_damper_state) = z6_damper_target;
-            id(z6_damper_change_ms) = now_ms;
-          }
-          
-          if (id(z6_damper_state) == 1) {
-            if (!id(Z6_damper_open).state) id(Z6_damper_open).turn_on();
-            if (id(Z6_damper_close).state) id(Z6_damper_close).turn_off();
-          } else {
-            if (id(Z6_damper_open).state) id(Z6_damper_open).turn_off();
-            if (!id(Z6_damper_close).state) id(Z6_damper_close).turn_on();
+            if (z6_damper_target == 1) {
+              ESP_LOGI(TAG_DAMPER, "Zone 6 damper opening");
+              id(z6_damper_open).execute();
+            } else {
+              ESP_LOGI(TAG_DAMPER, "Zone 6 damper closing");
+              id(z6_damper_close).execute();
+            }
           }
 
           // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============

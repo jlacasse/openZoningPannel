@@ -80,24 +80,6 @@ globals:
   - id: z6_damper_state
     type: int
     initial_value: '1'
-  - id: z1_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
-  - id: z2_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
-  - id: z3_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
-  - id: z4_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
-  - id: z5_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
-  - id: z6_damper_change_ms
-    type: unsigned long
-    initial_value: '0'
   - id: global_all_zone_count
     type: int
     initial_value: '0'
