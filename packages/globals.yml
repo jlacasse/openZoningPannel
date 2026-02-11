@@ -80,18 +80,16 @@ globals:
   - id: z6_damper_state
     type: int
     initial_value: '1'
-  - id: global_all_zone_count
-    type: int
-    initial_value: '0'
-  - id: global_purge_pending
-    type: bool
-    initial_value: 'false'
-  - id: global_purge_end_ms
-    type: unsigned long
-    initial_value: '0'
   - id: last_active_mode
     type: int
-    initial_value: '0'
+    initial_value: '0'  # 0=unknown, 1=heating, 2=cooling
+  # PASS 5: Central unit control variables
+  - id: geo_auto_mode
+    type: bool
+    initial_value: 'true'
+  - id: geo_stage2_escalation_ms
+    type: unsigned long
+    initial_value: '3600000'  # Default: 1 hour (60 * 60 * 1000 ms)
   # Short Cycle Protection Variables
   - id: min_cycle_time_ms
     type: unsigned long

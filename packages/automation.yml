@@ -5,6 +5,7 @@ esphome:
       then:
         - lambda: |-
             // Zone state constant definitions
+            #ifndef ZONE_OFF
             #define ZONE_OFF 0
             #define ZONE_FAN_ONLY 1
             #define ZONE_COOLING_STAGE1 2
@@ -14,6 +15,7 @@ esphome:
             #define ZONE_PURGE 6
             #define ZONE_WAIT 7
             #define ZONE_ERROR 99
+            #endif
 
             // Force initial state calculation and text sensor updates
             id(z1_state) = ZONE_OFF;
@@ -148,6 +150,7 @@ interval:
     then:
       - lambda: |-
           // Zone state constant definitions
+          #ifndef ZONE_OFF
           #define ZONE_OFF 0
           #define ZONE_FAN_ONLY 1
           #define ZONE_COOLING_STAGE1 2
@@ -157,6 +160,7 @@ interval:
           #define ZONE_PURGE 6
           #define ZONE_WAIT 7
           #define ZONE_ERROR 99
+          #endif
 
           // Define logging tag
           static const char* TAG = "ZoneError";
@@ -503,36 +507,107 @@ interval:
           DAMPER_CONTROL(5)
           DAMPER_CONTROL(6)
 
-          // ============= OUTPUT CONTROL LOGIC (COMMENTED FOR LATER) =============
-          // TODO: Implement central unit control algorithm
-          // This section will calculate which outputs to activate based on zone demands
+          // ============= PASS 5: CENTRAL UNIT OUTPUT CONTROL =============
+          // Determines the geothermal unit operating mode based on zone demands
+          // Manages: mode selection, stage 2 escalation, purge direction, error handling
+          // Only active when geo_auto_mode is true
+          static const char* TAG_OUTPUT = "OutputControl";
           
-          /*
-          int all_zone_count = id(z1_state) + id(z2_state) + id(z3_state) + id(z4_state) + id(z5_state) + id(z6_state);
-          id(global_all_zone_count) = all_zone_count;
-
-          unsigned long now_ms = millis();
-          unsigned long stage1_duration_ms = now_ms - id(geo_mode_stage1_start_ms);
-          bool stage1_active_1h = (stage1_duration_ms >= 3600000);
-
-          int new_mode = 0;
-
-          if (id(global_all_zone_count) >= 100) {
-            id(Out_G).turn_on();
-            id(Led_Fan).turn_on();
-          } else if (id(global_all_zone_count) > 0) {
-            id(Led_error).turn_on();
-          } else {
-            id(Out_G).turn_off();
-            id(Led_Fan).turn_off();
-            new_mode = 0;
+          if (id(geo_auto_mode)) {
+            int new_mode = 0;  // Default: Arrêt (index 0)
+            
+            // --- Error handling: force shutdown on zone error ---
+            if (id(zone_error_flag)) {
+              new_mode = 0;  // Arrêt
+              id(Led_error).turn_on();
+              ESP_LOGE(TAG_OUTPUT, "Zone error detected - forcing central unit to Arrêt");
+            } else {
+              id(Led_error).turn_off();
+              
+              // --- Determine base mode from global_max_priority ---
+              // Priority values: 0=OFF, 1=FAN, 2=COOLING, 4=HEATING, 6=PURGE
+              
+              if (global_max_priority == 0) {
+                // All zones OFF
+                new_mode = 0;  // Arrêt
+                
+              } else if (global_max_priority == 1) {
+                // Fan only demand
+                new_mode = 1;  // Fan1
+                
+              } else if (global_max_priority == 2) {
+                // Cooling demand - check if any zone needs stage 2
+                bool needs_stage2 = false;
+                int states[] = {z1_state_new, z2_state_new, z3_state_new, z4_state_new, z5_state_new, z6_state_new};
+                for (int i = 0; i < 6; i++) {
+                  if (states[i] == ZONE_COOLING_STAGE2) { needs_stage2 = true; break; }
+                }
+                
+                if (needs_stage2) {
+                  new_mode = 3;  // Clim Stage 2 (direct thermostat demand)
+                } else {
+                  new_mode = 2;  // Clim Stage 1
+                }
+                
+                // Update last active mode for purge direction
+                id(last_active_mode) = 2;  // cooling
+                
+              } else if (global_max_priority == 4) {
+                // Heating demand - check if any zone needs stage 2
+                bool needs_stage2 = false;
+                int states[] = {z1_state_new, z2_state_new, z3_state_new, z4_state_new, z5_state_new, z6_state_new};
+                for (int i = 0; i < 6; i++) {
+                  if (states[i] == ZONE_HEATING_STAGE2) { needs_stage2 = true; break; }
+                }
+                
+                if (needs_stage2) {
+                  new_mode = 5;  // Chauffage Stage 2 (direct thermostat demand)
+                } else {
+                  new_mode = 4;  // Chauffage Stage 1
+                }
+                
+                // Update last active mode for purge direction
+                id(last_active_mode) = 1;  // heating
+                
+              } else if (global_max_priority == 6) {
+                // Purge demand - fan only, preserve OB position from last active mode
+                if (id(last_active_mode) == 2) {
+                  new_mode = 7;  // Purge Clim (G ON, OB ON - same as cooling)
+                } else {
+                  new_mode = 6;  // Purge Chauffage (G ON, OB OFF - same as heating)
+                }
+              }
+              
+              // --- Stage 2 escalation timer ---
+              // If in Stage 1 for longer than escalation delay, auto-escalate to Stage 2
+              // Only applies when no zone directly requests Stage 2 via thermostat
+              if (new_mode == 2 || new_mode == 4) {
+                // Currently in Stage 1 - check escalation timer
+                if (id(geo_current_mode) != 2 && id(geo_current_mode) != 4) {
+                  // Just entered Stage 1 - start timer
+                  id(geo_mode_stage1_start_ms) = millis();
+                  ESP_LOGI(TAG_OUTPUT, "Stage 1 started - escalation timer armed (%lu ms)", id(geo_stage2_escalation_ms));
+                } else if (id(geo_stage2_escalation_ms) > 0) {
+                  // Already in Stage 1 - check if escalation delay exceeded
+                  unsigned long stage1_elapsed = millis() - id(geo_mode_stage1_start_ms);
+                  if (stage1_elapsed >= id(geo_stage2_escalation_ms)) {
+                    new_mode = new_mode + 1;  // 2→3 (Clim S2) or 4→5 (Chauffage S2)
+                    ESP_LOGW(TAG_OUTPUT, "Stage 2 ESCALATION triggered after %lu ms (threshold: %lu ms)", stage1_elapsed, id(geo_stage2_escalation_ms));
+                  }
+                }
+              } else {
+                // Not in Stage 1 - reset escalation timer
+                id(geo_mode_stage1_start_ms) = 0;
+              }
+            }
+            
+            // --- Apply mode change via select entity ---
+            if (new_mode != id(geo_current_mode)) {
+              ESP_LOGI(TAG_OUTPUT, "Mode change: %d -> %d (priority: %d)", id(geo_current_mode), new_mode, global_max_priority);
+              id(geo_current_mode) = new_mode;
+              auto call = id(Geothermie_mode_select).make_call();
+              call.set_index(new_mode);
+              call.perform();
+            }
           }
-
-          if (new_mode != id(geo_current_mode)) {
-            id(geo_current_mode) = new_mode;
-            auto call = id(Geothermie_mode_select).make_call();
-            call.set_index(new_mode);
-            call.perform();
-          }
-          */
 

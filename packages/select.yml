@@ -5,12 +5,14 @@ select:
   optimistic: true
   restore_value: true
   options:
-    - Arrêt
-    - Fan1
-    - Clim Stage 1
-    - Clim Stage 2
-    - Chauffage Stage 1
-    - Chauffage Stage 2
+    - Arrêt              # index 0
+    - Fan1               # index 1
+    - Clim Stage 1       # index 2
+    - Clim Stage 2       # index 3
+    - Chauffage Stage 1  # index 4
+    - Chauffage Stage 2  # index 5
+    - Purge Chauffage    # index 6 - Fan only, OB OFF (last was heating)
+    - Purge Clim         # index 7 - Fan only, OB ON (last was cooling)
   initial_option: Arrêt
   on_value:
     then:
@@ -18,6 +20,17 @@ select:
           auto mode_index_opt = id(Geothermie_mode_select).active_index();
           if (mode_index_opt.has_value()) {
             int mode_index = mode_index_opt.value();
+
+            // Auto/Manual guard: in auto mode, only allow Arrêt (0) and Fan1 (1) manually
+            if (id(geo_auto_mode) && mode_index >= 2) {
+              ESP_LOGW("Mode", "Manual selection of mode %d blocked - auto mode active. Only Arrêt/Fan allowed.", mode_index);
+              // Restore previous mode
+              auto call = id(Geothermie_mode_select).make_call();
+              call.set_index(id(geo_current_mode));
+              call.perform();
+              return;
+            }
+
             if (mode_index == 0) {
               ESP_LOGD("Mode", "Tout à l'arrêt");
               id(Led_Fan).turn_off();
@@ -95,6 +108,32 @@ select:
               id(Out_G).turn_on();
               id(Out_OB).turn_off();
               id(Out_Y2).turn_on();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 6) {
+              ESP_LOGD("Mode", "Purge Chauffage (fan only, OB OFF)");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_off();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_off();
+              id(Out_Y2).turn_off();
+              id(Out_W1e).turn_off();
+            } else if (mode_index == 7) {
+              ESP_LOGD("Mode", "Purge Clim (fan only, OB ON)");
+              id(Led_Fan).turn_on();
+              id(Led_Heat).turn_off();
+              id(Led_Cool).turn_off();
+              id(Led_error).turn_off();
+              id(Out_Y1).turn_off();
+              id(Out_W3).turn_off();
+              id(Out_W2).turn_off();
+              id(Out_G).turn_on();
+              id(Out_OB).turn_on();
+              id(Out_Y2).turn_off();
               id(Out_W1e).turn_off();
             }
           }
