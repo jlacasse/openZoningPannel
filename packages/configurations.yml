@@ -2,7 +2,7 @@
 i2c:
   scl: D1
   sda: D2
-  scan: true
+  scan: false
   id: bus_a
 
 # Enable Home Assistant API
@@ -20,6 +20,8 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   min_auth_mode: WPA2
+  power_save_mode: none  # Disable WiFi power saving to prevent disconnections
+  fast_connect: true     # Skip scanning, connect directly to known SSID
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:

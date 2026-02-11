@@ -21,15 +21,14 @@ select:
           if (mode_index_opt.has_value()) {
             int mode_index = mode_index_opt.value();
 
-            // Auto/Manual guard: in auto mode, only allow Arrêt (0) and Fan1 (1) manually
-            if (id(geo_auto_mode) && mode_index >= 2) {
-              ESP_LOGW("Mode", "Manual selection of mode %d blocked - auto mode active. Only Arrêt/Fan allowed.", mode_index);
-              // Restore previous mode
-              auto call = id(Geothermie_mode_select).make_call();
-              call.set_index(id(geo_current_mode));
-              call.perform();
-              return;
+            // In auto mode, log a warning but allow the change
+            // PASS 5 will overwrite it on the next 10s cycle
+            if (id(geo_auto_mode) && mode_index != id(geo_current_mode)) {
+              ESP_LOGW("Mode", "Manual override to mode %d while auto mode active - will be overwritten in ~10s", mode_index);
             }
+
+            // Update geo_current_mode to track the active mode
+            id(geo_current_mode) = mode_index;
 
             if (mode_index == 0) {
               ESP_LOGD("Mode", "Tout à l'arrêt");

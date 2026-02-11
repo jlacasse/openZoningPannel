@@ -12,5 +12,6 @@ esp8266:
   board: nodemcuv2
 
 logger:
+  level: INFO  # Reduce log overhead on ESP8266 (change to DEBUG for troubleshooting)
 
 captive_portal:
