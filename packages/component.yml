@@ -3,9 +3,11 @@
 
 external_components:
   - source:
-      type: local
-      path: components
+      type: git
+      url: https://github.com/jlacasse/openZoningPannel
+      ref: main
     components: [open_zoning]
+    refresh: 0s
 
 open_zoning:
   update_interval: 10s
