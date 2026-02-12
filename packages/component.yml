@@ -1,0 +1,11 @@
+# Open Zoning Component — external component declaration
+# Phase 0A: Skeleton — the component compiles and logs a heartbeat
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [open_zoning]
+
+open_zoning:
+  update_interval: 10s

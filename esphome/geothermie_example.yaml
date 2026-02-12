@@ -14,3 +14,4 @@ packages:
   select: github://jlacasse/openZoningPannel/packages/select.yml
   automation: github://jlacasse/openZoningPannel/packages/automation.yml
   text_sensors: github://jlacasse/openZoningPannel/packages/text_sensors.yml
+  component: github://jlacasse/openZoningPannel/packages/component.yml
