@@ -1,5 +1,5 @@
 # Open Zoning Component — external component declaration
-# Phase 0C: PASS 1-3 logic migrated to C++ (runs in parallel with old lambda)
+# Phase 0D: Full PASS 1-5 logic migrated to C++ with damper control
 
 external_components:
   - source:
@@ -11,30 +11,64 @@ external_components:
 
 open_zoning:
   update_interval: 10s
-  min_cycle_time: 480s   # 8 minutes — must match configurations.yml default
-  purge_duration: 300s   # 5 minutes — matches PURGE_DURATION_MS in automation.yml
+  min_cycle_time: 480s              # 8 minutes
+  purge_duration: 300s              # 5 minutes
+  stage2_escalation_delay: 3600s    # 1 hour
+  auto_mode: true
+
+  # Central unit output switches
+  out_y1: Out_Y1
+  out_y2: Out_Y2
+  out_g:  Out_G
+  out_ob: Out_OB
+  out_w1e: Out_W1e
+  out_w2:  Out_W2
+  out_w3:  Out_W3
+
+  # LED indicator switches
+  led_heat:  Led_Heat
+  led_cool:  Led_Cool
+  led_fan:   Led_Fan
+  led_error: Led_error
+
+  # Mode select entity
+  mode_select: Geothermie_mode_select
+
+  # Per-zone configuration: thermostat inputs + damper switches
   zones:
     - y1: Z1_Y1
       y2: Z1_Y2
       g:  Z1_G
       ob: Z1_OB
+      damper_open:  Z1_damper_open
+      damper_close: Z1_damper_close
     - y1: Z2_Y1
       y2: Z2_Y2
       g:  Z2_G
       ob: Z2_OB
+      damper_open:  Z2_damper_open
+      damper_close: Z2_damper_close
     - y1: Z3_Y1
       y2: Z3_Y2
       g:  Z3_G
       ob: Z3_OB
+      damper_open:  Z3_damper_open
+      damper_close: Z3_damper_close
     - y1: Z4_Y1
       y2: Z4_Y2
       g:  Z4_G
       ob: Z4_OB
+      damper_open:  Z4_damper_open
+      damper_close: Z4_damper_close
     - y1: Z5_Y1
       y2: Z5_Y2
       g:  Z5_G
       ob: Z5_OB
+      damper_open:  Z5_damper_open
+      damper_close: Z5_damper_close
     - y1: Z6_Y1
       y2: Z6_Y2
       g:  Z6_G
       ob: Z6_OB
+      damper_open:  Z6_damper_open
+      damper_close: Z6_damper_close

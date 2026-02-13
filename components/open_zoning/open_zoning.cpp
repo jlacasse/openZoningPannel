@@ -117,6 +117,17 @@ void OpenZoningController::set_zone_sensors(uint8_t index,
   zones_[index].ob = ob;
 }
 
+void OpenZoningController::set_zone_dampers(uint8_t index,
+                                            switch_::Switch *damper_open,
+                                            switch_::Switch *damper_close) {
+  if (index >= MAX_ZONES) {
+    ESP_LOGE(TAG, "Zone index %d exceeds MAX_ZONES (%d)", index, MAX_ZONES);
+    return;
+  }
+  zones_[index].damper_open_sw = damper_open;
+  zones_[index].damper_close_sw = damper_close;
+}
+
 void OpenZoningController::setup() {
   ESP_LOGI(TAG, "OpenZoning initialized — %d zones configured", num_zones_);
 
@@ -132,6 +143,16 @@ void OpenZoningController::setup() {
     zones_[i].short_cycle_protection = false;
     zones_[i].enabled = true;
   }
+
+  // Open all dampers on boot (replaces the 6 on_boot script calls)
+  for (uint8_t i = 0; i < num_zones_; i++) {
+    open_damper_(i);
+  }
+
+  // Initialize mode to Arrêt
+  current_mode_ = 0;
+  last_active_mode_ = 0;
+  stage1_start_ms_ = 0;
 }
 
 void OpenZoningController::update() {
@@ -145,6 +166,10 @@ void OpenZoningController::update() {
   pass1_5_short_cycle_protection_();
   pass2_purge_management_();
   pass3_priority_analysis_();
+
+  // Execute PASS 4–5
+  pass4_damper_control_();
+  pass5_output_control_();
 
   // Commit new states and log changes
   for (uint8_t i = 0; i < num_zones_; i++) {
@@ -168,13 +193,31 @@ void OpenZoningController::dump_config() {
   ESP_LOGCONFIG(TAG, "  Zones configured: %d", num_zones_);
   ESP_LOGCONFIG(TAG, "  Min cycle time: %u ms", min_cycle_time_ms_);
   ESP_LOGCONFIG(TAG, "  Purge duration: %u ms", purge_duration_ms_);
+  ESP_LOGCONFIG(TAG, "  Stage 2 escalation: %u ms", stage2_escalation_ms_);
+  ESP_LOGCONFIG(TAG, "  Auto mode: %s", auto_mode_ ? "YES" : "NO");
   for (uint8_t i = 0; i < num_zones_; i++) {
     ESP_LOGCONFIG(TAG, "  Zone %d:", i + 1);
     ESP_LOGCONFIG(TAG, "    Y1: %s", zones_[i].y1 ? zones_[i].y1->get_name().c_str() : "NOT SET");
     ESP_LOGCONFIG(TAG, "    Y2: %s", zones_[i].y2 ? zones_[i].y2->get_name().c_str() : "NOT SET");
     ESP_LOGCONFIG(TAG, "    G:  %s", zones_[i].g  ? zones_[i].g->get_name().c_str()  : "NOT SET");
     ESP_LOGCONFIG(TAG, "    OB: %s", zones_[i].ob ? zones_[i].ob->get_name().c_str() : "NOT SET");
+    ESP_LOGCONFIG(TAG, "    Damper Open:  %s", zones_[i].damper_open_sw  ? zones_[i].damper_open_sw->get_name().c_str()  : "NOT SET");
+    ESP_LOGCONFIG(TAG, "    Damper Close: %s", zones_[i].damper_close_sw ? zones_[i].damper_close_sw->get_name().c_str() : "NOT SET");
   }
+  ESP_LOGCONFIG(TAG, "  Outputs:");
+  ESP_LOGCONFIG(TAG, "    Y1:  %s", out_y1_  ? out_y1_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    Y2:  %s", out_y2_  ? out_y2_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    G:   %s", out_g_   ? out_g_->get_name().c_str()   : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    OB:  %s", out_ob_  ? out_ob_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    W1e: %s", out_w1e_ ? out_w1e_->get_name().c_str() : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    W2:  %s", out_w2_  ? out_w2_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    W3:  %s", out_w3_  ? out_w3_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "  LEDs:");
+  ESP_LOGCONFIG(TAG, "    Heat:  %s", led_heat_  ? led_heat_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    Cool:  %s", led_cool_  ? led_cool_->get_name().c_str()  : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    Fan:   %s", led_fan_   ? led_fan_->get_name().c_str()   : "NOT SET");
+  ESP_LOGCONFIG(TAG, "    Error: %s", led_error_ ? led_error_->get_name().c_str() : "NOT SET");
+  ESP_LOGCONFIG(TAG, "  Mode select: %s", mode_select_ ? mode_select_->get_name().c_str() : "NOT SET");
 }
 
 // ============================================================================
@@ -297,6 +340,247 @@ void OpenZoningController::pass3_priority_analysis_() {
       zones_[i].state_new = ZoneState::WAIT;
     }
   }
+}
+
+// ============================================================================
+// PASS 4: Damper Control
+// ============================================================================
+void OpenZoningController::pass4_damper_control_() {
+  bool all_zones_off = (global_max_priority_ == 0);
+
+  for (uint8_t i = 0; i < num_zones_; i++) {
+    if (!zones_[i].enabled)
+      continue;
+
+    Zone &z = zones_[i];
+
+    // Determine target damper position
+    uint8_t damper_target = 1;  // Default: open
+    if (z.state_new == ZoneState::WAIT || z.state_new == ZoneState::ERROR) {
+      damper_target = 0;  // Close for WAIT and ERROR
+    } else if (all_zones_off) {
+      damper_target = 1;  // All zones off: keep all dampers open
+    } else if (z.state_new == ZoneState::OFF) {
+      damper_target = 0;  // Zone off while others active: close
+    } else {
+      damper_target = 1;  // Active zone: open
+    }
+
+    // Apply damper change if needed
+    if (damper_target != z.damper_state) {
+      z.damper_state = damper_target;
+      if (damper_target == 1) {
+        ESP_LOGI(TAG, "Zone %d damper opening", i + 1);
+        open_damper_(i);
+      } else {
+        ESP_LOGI(TAG, "Zone %d damper closing", i + 1);
+        close_damper_(i);
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Damper helpers — replaces the 12 ESPHome scripts
+// Uses set_timeout() for the 250ms motor release delay
+// ============================================================================
+void OpenZoningController::open_damper_(uint8_t zone) {
+  if (zone >= num_zones_) return;
+  Zone &z = zones_[zone];
+  if (!z.damper_open_sw || !z.damper_close_sw) return;
+
+  // Step 1: turn off both directions immediately
+  z.damper_close_sw->turn_off();
+  z.damper_open_sw->turn_off();
+
+  // Step 2: after 250ms, engage the open direction
+  // Capture the switch pointer for the lambda
+  switch_::Switch *open_sw = z.damper_open_sw;
+  char timeout_name[20];
+  snprintf(timeout_name, sizeof(timeout_name), "damper_o_%d", zone);
+  this->set_timeout(timeout_name, 250, [open_sw]() {
+    open_sw->turn_on();
+  });
+}
+
+void OpenZoningController::close_damper_(uint8_t zone) {
+  if (zone >= num_zones_) return;
+  Zone &z = zones_[zone];
+  if (!z.damper_open_sw || !z.damper_close_sw) return;
+
+  // Step 1: turn off both directions immediately
+  z.damper_open_sw->turn_off();
+  z.damper_close_sw->turn_off();
+
+  // Step 2: after 250ms, engage the close direction
+  switch_::Switch *close_sw = z.damper_close_sw;
+  char timeout_name[20];
+  snprintf(timeout_name, sizeof(timeout_name), "damper_c_%d", zone);
+  this->set_timeout(timeout_name, 250, [close_sw]() {
+    close_sw->turn_on();
+  });
+}
+
+// ============================================================================
+// PASS 5: Central Unit Output Control
+// ============================================================================
+void OpenZoningController::pass5_output_control_() {
+  if (!auto_mode_) {
+    return;  // Manual mode — don't touch outputs
+  }
+
+  int new_mode = 0;  // Default: Arrêt (index 0)
+
+  // --- Error handling: force shutdown on zone error ---
+  if (zone_error_flag_) {
+    new_mode = 0;  // Arrêt
+    if (led_error_) led_error_->turn_on();
+    ESP_LOGE(TAG, "Zone error detected - forcing central unit to Arrêt");
+  } else {
+    if (led_error_) led_error_->turn_off();
+
+    // --- Determine base mode from global_max_priority ---
+    if (global_max_priority_ == 0) {
+      new_mode = 0;  // Arrêt
+
+    } else if (global_max_priority_ == 1) {
+      new_mode = 1;  // Fan1
+
+    } else if (global_max_priority_ == 2) {
+      // Cooling demand — check if any zone needs stage 2
+      bool needs_stage2 = false;
+      for (uint8_t i = 0; i < num_zones_; i++) {
+        if (zones_[i].state_new == ZoneState::COOLING_STAGE2) {
+          needs_stage2 = true;
+          break;
+        }
+      }
+      new_mode = needs_stage2 ? 3 : 2;  // Clim Stage 2 or 1
+      last_active_mode_ = 2;  // cooling
+
+    } else if (global_max_priority_ == 4) {
+      // Heating demand — check if any zone needs stage 2
+      bool needs_stage2 = false;
+      for (uint8_t i = 0; i < num_zones_; i++) {
+        if (zones_[i].state_new == ZoneState::HEATING_STAGE2) {
+          needs_stage2 = true;
+          break;
+        }
+      }
+      new_mode = needs_stage2 ? 5 : 4;  // Chauffage Stage 2 or 1
+      last_active_mode_ = 1;  // heating
+
+    } else if (global_max_priority_ == 6) {
+      // Purge demand — fan only, preserve OB position from last active mode
+      new_mode = (last_active_mode_ == 2) ? 7 : 6;
+      // 7 = Purge Clim (G ON, OB ON), 6 = Purge Chauffage (G ON, OB OFF)
+    }
+
+    // --- Stage 2 escalation timer ---
+    if (new_mode == 2 || new_mode == 4) {
+      // Currently in Stage 1 — check escalation timer
+      if (current_mode_ != 2 && current_mode_ != 4) {
+        // Just entered Stage 1 — start timer
+        stage1_start_ms_ = millis();
+        ESP_LOGI(TAG, "Stage 1 started - escalation timer armed (%u ms)", stage2_escalation_ms_);
+      } else if (stage2_escalation_ms_ > 0) {
+        // Already in Stage 1 — check if escalation delay exceeded
+        unsigned long stage1_elapsed = millis() - stage1_start_ms_;
+        if (stage1_elapsed >= stage2_escalation_ms_) {
+          new_mode = new_mode + 1;  // 2→3 (Clim S2) or 4→5 (Chauffage S2)
+          ESP_LOGW(TAG, "Stage 2 ESCALATION triggered after %lu ms (threshold: %u ms)",
+                   stage1_elapsed, stage2_escalation_ms_);
+        }
+      }
+    } else {
+      // Not in Stage 1 — reset escalation timer
+      stage1_start_ms_ = 0;
+    }
+  }
+
+  // --- Apply mode change via select entity ---
+  if (new_mode != current_mode_) {
+    ESP_LOGI(TAG, "Mode change: %d -> %d (priority: %d)", current_mode_, new_mode, global_max_priority_);
+    current_mode_ = new_mode;
+    apply_mode_(new_mode);
+  }
+}
+
+// ============================================================================
+// Apply mode — drives LEDs and outputs, syncs the select entity
+// Replaces the on_value lambda in select.yml
+// ============================================================================
+void OpenZoningController::apply_mode_(int mode) {
+  // Sync the select entity to reflect the new mode in HA
+  if (mode_select_) {
+    auto call = mode_select_->make_call();
+    call.set_index(mode);
+    call.perform();
+  }
+
+  // Default: all off
+  bool y1 = false, y2 = false, g = false, ob = false;
+  bool w1e = false, w2 = false, w3 = false;
+  bool l_fan = false, l_heat = false, l_cool = false, l_error = false;
+
+  switch (mode) {
+    case 0:  // Arrêt
+      ESP_LOGD(TAG, "Mode: Arrêt");
+      break;
+    case 1:  // Fan1
+      ESP_LOGD(TAG, "Mode: Fan");
+      l_fan = true;
+      g = true;
+      break;
+    case 2:  // Clim Stage 1
+      ESP_LOGD(TAG, "Mode: Clim Stage 1");
+      l_fan = true; l_cool = true;
+      y1 = true; g = true; ob = true;
+      break;
+    case 3:  // Clim Stage 2
+      ESP_LOGD(TAG, "Mode: Clim Stage 2");
+      l_fan = true; l_cool = true;
+      y1 = true; y2 = true; g = true; ob = true;
+      break;
+    case 4:  // Chauffage Stage 1
+      ESP_LOGD(TAG, "Mode: Chauffage Stage 1");
+      l_fan = true; l_heat = true;
+      y1 = true; g = true;
+      break;
+    case 5:  // Chauffage Stage 2
+      ESP_LOGD(TAG, "Mode: Chauffage Stage 2");
+      l_fan = true; l_heat = true;
+      y1 = true; y2 = true; g = true;
+      break;
+    case 6:  // Purge Chauffage (fan only, OB OFF)
+      ESP_LOGD(TAG, "Mode: Purge Chauffage");
+      l_fan = true;
+      g = true;
+      break;
+    case 7:  // Purge Clim (fan only, OB ON)
+      ESP_LOGD(TAG, "Mode: Purge Clim");
+      l_fan = true;
+      g = true; ob = true;
+      break;
+    default:
+      ESP_LOGW(TAG, "Unknown mode index: %d", mode);
+      break;
+  }
+
+  // Apply outputs
+  if (out_y1_)  { if (y1)  out_y1_->turn_on();  else out_y1_->turn_off();  }
+  if (out_y2_)  { if (y2)  out_y2_->turn_on();  else out_y2_->turn_off();  }
+  if (out_g_)   { if (g)   out_g_->turn_on();   else out_g_->turn_off();   }
+  if (out_ob_)  { if (ob)  out_ob_->turn_on();  else out_ob_->turn_off();  }
+  if (out_w1e_) { if (w1e) out_w1e_->turn_on(); else out_w1e_->turn_off(); }
+  if (out_w2_)  { if (w2)  out_w2_->turn_on();  else out_w2_->turn_off();  }
+  if (out_w3_)  { if (w3)  out_w3_->turn_on();  else out_w3_->turn_off();  }
+
+  // Apply LEDs
+  if (led_fan_)   { if (l_fan)   led_fan_->turn_on();   else led_fan_->turn_off();   }
+  if (led_heat_)  { if (l_heat)  led_heat_->turn_on();  else led_heat_->turn_off();  }
+  if (led_cool_)  { if (l_cool)  led_cool_->turn_on();  else led_cool_->turn_off();  }
+  if (led_error_) { if (l_error) led_error_->turn_on(); else led_error_->turn_off(); }
 }
 
 }  // namespace open_zoning

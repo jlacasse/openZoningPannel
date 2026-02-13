@@ -86,7 +86,7 @@ components/
 - **L'ancien `automation.yml` reste actif en parallèle** pour comparaison de logs.
 - **Critère de réussite** : Les logs du composant C++ montrent les mêmes calculs d'état que le lambda existant.
 
-#### Phase 0D : Migration PASS 4-5 + scripts damper ⬜
+#### Phase 0D : Migration PASS 4-5 + scripts damper ✅
 
 - **Description** : Porter le contrôle des clapets (PASS 4) et le contrôle de l'unité centrale (PASS 5) en C++. Remplacer les 12 scripts ESPHome de damper par des méthodes utilisant `set_timeout()` pour le délai de 250ms.
 - **Fichiers à modifier** :
@@ -224,6 +224,7 @@ components/
 | 2026-02-11 | #0 Phase 0A — Scaffolding composant | ✅ En attente de validation compilation |
 | 2026-02-12 | #0 Phase 0B — Référencement entités (binary sensors) | ✅ |
 | 2026-02-12 | #0 Phase 0C — Migration PASS 1-3 en C++ | ✅ |
+| 2026-02-12 | #0 Phase 0D — Migration PASS 4-5 + dampers en C++ | ✅ |
 
 ---
 

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/switch/switch.h"
 
 namespace esphome {
 namespace open_zoning {
@@ -73,6 +74,10 @@ struct Zone {
   binary_sensor::BinarySensor *y2{nullptr};
   binary_sensor::BinarySensor *g{nullptr};
   binary_sensor::BinarySensor *ob{nullptr};
+
+  // --- Damper output switches (set via codegen from __init__.py) ---
+  switch_::Switch *damper_open_sw{nullptr};
+  switch_::Switch *damper_close_sw{nullptr};
 
   // Current and next computed state
   ZoneState state{ZoneState::OFF};
