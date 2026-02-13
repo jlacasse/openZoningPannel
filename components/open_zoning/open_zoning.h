@@ -60,8 +60,9 @@ class OpenZoningController : public PollingComponent {
   void pass5_output_control_();
 
   // --- Damper helpers (use set_timeout for 250ms motor release) ---
-  void open_damper_(uint8_t zone);
-  void close_damper_(uint8_t zone);
+  // delay_offset staggers operations to avoid MCP23017 I2C bus collisions
+  void open_damper_(uint8_t zone, uint32_t delay_offset = 0);
+  void close_damper_(uint8_t zone, uint32_t delay_offset = 0);
 
   // --- Central unit mode application ---
   void apply_mode_(int mode);

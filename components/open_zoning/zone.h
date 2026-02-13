@@ -87,7 +87,7 @@ struct Zone {
   uint8_t error_count{0};
 
   // Damper tracking
-  uint8_t damper_state{1};  // 1 = open, 0 = closed
+  uint8_t damper_state{255};  // 255 = unknown (forces first update to drive correct position), 1 = open, 0 = closed
 
   // Purge timer
   unsigned long purge_end_ms{0};

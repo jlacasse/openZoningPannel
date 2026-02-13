@@ -136,7 +136,7 @@ void OpenZoningController::setup() {
     zones_[i].index = i;
     zones_[i].state = ZoneState::OFF;
     zones_[i].state_new = ZoneState::OFF;
-    zones_[i].damper_state = 1;  // All dampers open on boot
+    zones_[i].damper_state = 255;  // Unknown — forces first update() to drive correct position
     zones_[i].error_count = 0;
     zones_[i].purge_end_ms = 0;
     zones_[i].active_start_ms = 0;
@@ -144,10 +144,9 @@ void OpenZoningController::setup() {
     zones_[i].enabled = true;
   }
 
-  // Open all dampers on boot (replaces the 6 on_boot script calls)
-  for (uint8_t i = 0; i < num_zones_; i++) {
-    open_damper_(i);
-  }
+  // NOTE: Dampers are NOT driven in setup() — the first update() cycle
+  // will determine the correct position based on actual zone demands.
+  // This avoids I2C race conditions with MCP23017 during boot.
 
   // Initialize mode to Arrêt
   current_mode_ = 0;
@@ -347,6 +346,7 @@ void OpenZoningController::pass3_priority_analysis_() {
 // ============================================================================
 void OpenZoningController::pass4_damper_control_() {
   bool all_zones_off = (global_max_priority_ == 0);
+  uint8_t stagger_count = 0;
 
   for (uint8_t i = 0; i < num_zones_; i++) {
     if (!zones_[i].enabled)
@@ -369,13 +369,15 @@ void OpenZoningController::pass4_damper_control_() {
     // Apply damper change if needed
     if (damper_target != z.damper_state) {
       z.damper_state = damper_target;
+      uint32_t offset = stagger_count * 100;  // 100ms between each zone to avoid MCP23017 I2C collisions
       if (damper_target == 1) {
-        ESP_LOGI(TAG, "Zone %d damper opening", i + 1);
-        open_damper_(i);
+        ESP_LOGI(TAG, "Zone %d damper opening (offset: %ums)", i + 1, offset);
+        open_damper_(i, offset);
       } else {
-        ESP_LOGI(TAG, "Zone %d damper closing", i + 1);
-        close_damper_(i);
+        ESP_LOGI(TAG, "Zone %d damper closing (offset: %ums)", i + 1, offset);
+        close_damper_(i, offset);
       }
+      stagger_count++;
     }
   }
 }
@@ -384,39 +386,53 @@ void OpenZoningController::pass4_damper_control_() {
 // Damper helpers — replaces the 12 ESPHome scripts
 // Uses set_timeout() for the 250ms motor release delay
 // ============================================================================
-void OpenZoningController::open_damper_(uint8_t zone) {
+void OpenZoningController::open_damper_(uint8_t zone, uint32_t delay_offset) {
   if (zone >= num_zones_) return;
   Zone &z = zones_[zone];
   if (!z.damper_open_sw || !z.damper_close_sw) return;
 
-  // Step 1: turn off both directions immediately
-  z.damper_close_sw->turn_off();
-  z.damper_open_sw->turn_off();
-
-  // Step 2: after 250ms, engage the open direction
-  // Capture the switch pointer for the lambda
+  // Capture switch pointers for lambda
   switch_::Switch *open_sw = z.damper_open_sw;
-  char timeout_name[20];
-  snprintf(timeout_name, sizeof(timeout_name), "damper_o_%d", zone);
-  this->set_timeout(timeout_name, 250, [open_sw]() {
+  switch_::Switch *close_sw = z.damper_close_sw;
+
+  // Step 1: after delay_offset, turn off both directions
+  // Staggering avoids MCP23017 I2C register write collisions
+  char tn_stop[20];
+  snprintf(tn_stop, sizeof(tn_stop), "damper_s_%d", zone);
+  this->set_timeout(tn_stop, delay_offset, [close_sw, open_sw]() {
+    close_sw->turn_off();
+    open_sw->turn_off();
+  });
+
+  // Step 2: after delay_offset + 250ms, engage the open direction
+  char tn_open[20];
+  snprintf(tn_open, sizeof(tn_open), "damper_o_%d", zone);
+  this->set_timeout(tn_open, delay_offset + 250, [open_sw]() {
     open_sw->turn_on();
   });
 }
 
-void OpenZoningController::close_damper_(uint8_t zone) {
+void OpenZoningController::close_damper_(uint8_t zone, uint32_t delay_offset) {
   if (zone >= num_zones_) return;
   Zone &z = zones_[zone];
   if (!z.damper_open_sw || !z.damper_close_sw) return;
 
-  // Step 1: turn off both directions immediately
-  z.damper_open_sw->turn_off();
-  z.damper_close_sw->turn_off();
-
-  // Step 2: after 250ms, engage the close direction
+  // Capture switch pointers for lambda
+  switch_::Switch *open_sw = z.damper_open_sw;
   switch_::Switch *close_sw = z.damper_close_sw;
-  char timeout_name[20];
-  snprintf(timeout_name, sizeof(timeout_name), "damper_c_%d", zone);
-  this->set_timeout(timeout_name, 250, [close_sw]() {
+
+  // Step 1: after delay_offset, turn off both directions
+  char tn_stop[20];
+  snprintf(tn_stop, sizeof(tn_stop), "damper_s_%d", zone);
+  this->set_timeout(tn_stop, delay_offset, [open_sw, close_sw]() {
+    open_sw->turn_off();
+    close_sw->turn_off();
+  });
+
+  // Step 2: after delay_offset + 250ms, engage the close direction
+  char tn_close[20];
+  snprintf(tn_close, sizeof(tn_close), "damper_c_%d", zone);
+  this->set_timeout(tn_close, delay_offset + 250, [close_sw]() {
     close_sw->turn_on();
   });
 }
