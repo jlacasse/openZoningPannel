@@ -37,56 +37,8 @@ mcp23017:
   - id: 'mcp23017_0x22'
     address: 0x22
 
-# Configuration Number entity for Short Cycle Protection
-number:
-  - platform: template
-    name: "Min Cycle Time"
-    id: min_cycle_time
-    optimistic: true
-    min_value: 0
-    max_value: 1800
-    step: 60
-    unit_of_measurement: "s"
-    mode: slider
-    icon: "mdi:timer-outline"
-    initial_value: 480
-    on_value:
-      then:
-        - lambda: |-
-            id(min_cycle_time_ms) = (unsigned long)(x * 1000);
-            ESP_LOGI("ShortCycleProtection", "Min cycle time set to %.0f seconds (%.0f ms)", x, x * 1000);
-
-  - platform: template
-    name: "Stage 2 Escalation Delay"
-    id: stage2_escalation_delay
-    optimistic: true
-    min_value: 0
-    max_value: 7200
-    step: 300
-    unit_of_measurement: "s"
-    mode: slider
-    icon: "mdi:timer-sand"
-    initial_value: 3600
-    on_value:
-      then:
-        - lambda: |-
-            id(geo_stage2_escalation_ms) = (unsigned long)(x * 1000);
-            ESP_LOGI("OutputControl", "Stage 2 escalation delay set to %.0f seconds (%.0f ms)", x, x * 1000);
-
-switch:
-  - platform: template
-    name: "Geo Auto Mode"
-    id: geo_auto_mode_switch
-    icon: "mdi:auto-fix"
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
-    lambda: |-
-      return id(geo_auto_mode);
-    turn_on_action:
-      - lambda: |-
-          id(geo_auto_mode) = true;
-          ESP_LOGI("OutputControl", "Auto mode ENABLED - PASS 5 will control central unit");
-    turn_off_action:
-      - lambda: |-
-          id(geo_auto_mode) = false;
-          ESP_LOGI("OutputControl", "Auto mode DISABLED - Manual control only (Arrêt/Fan)");
+# NOTE: Les entités "Min Cycle Time", "Stage 2 Escalation Delay" et
+# "Geo Auto Mode" sont désormais gérées par le composant open_zoning
+# (paramètres min_cycle_time, stage2_escalation_delay et auto_mode
+# dans component.yml). Les anciens number/switch templates qui
+# utilisaient des globals ont été supprimés.

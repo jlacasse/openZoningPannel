@@ -94,7 +94,7 @@ components/
   - `components/open_zoning/open_zoning.h` — déclarer les nouvelles méthodes
 - **Critère de réussite** : Le composant C++ contrôle correctement les clapets et les sorties de l'unité centrale. Comportement identique au lambda.
 
-#### Phase 0E : Nettoyage et suppression de l'ancien code ⬜
+#### Phase 0E : Nettoyage et suppression de l'ancien code ✅
 
 - **Description** : Supprimer les fichiers rendus obsolètes et finaliser la migration.
 - **Fichiers à supprimer** :
@@ -225,6 +225,7 @@ components/
 | 2026-02-12 | #0 Phase 0B — Référencement entités (binary sensors) | ✅ |
 | 2026-02-12 | #0 Phase 0C — Migration PASS 1-3 en C++ | ✅ |
 | 2026-02-12 | #0 Phase 0D — Migration PASS 4-5 + dampers en C++ | ✅ |
+| 2026-02-12 | #0 Phase 0E — Nettoyage et suppression ancien code | ✅ |
 
 ---
 
