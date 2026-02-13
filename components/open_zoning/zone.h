@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "esphome/components/binary_sensor/binary_sensor.h"
 
 namespace esphome {
 namespace open_zoning {
@@ -67,6 +68,12 @@ inline const char *state_to_string(ZoneState state) {
 struct Zone {
   uint8_t index{0};  // Zone number (0-based internally, 1-based for logging)
 
+  // --- Thermostat input sensors (set via codegen from __init__.py) ---
+  binary_sensor::BinarySensor *y1{nullptr};
+  binary_sensor::BinarySensor *y2{nullptr};
+  binary_sensor::BinarySensor *g{nullptr};
+  binary_sensor::BinarySensor *ob{nullptr};
+
   // Current and next computed state
   ZoneState state{ZoneState::OFF};
   ZoneState state_new{ZoneState::OFF};
@@ -86,6 +93,32 @@ struct Zone {
 
   // Zone enable flag (for future optimization #2)
   bool enabled{true};
+
+  // --- PASS 1: Calculate zone state from thermostat inputs ---
+  // Returns true if this zone triggered an error
+  bool calc_state();
+
+  // --- PASS 1.5: Short cycle protection ---
+  void apply_short_cycle_protection(unsigned long current_time, unsigned long min_cycle_time_ms);
+
+  // --- PASS 3: Priority ---
+  int get_priority() const { return state_to_priority(state_new); }
+
+  // --- Helper methods ---
+  bool is_heating() const {
+    return state_new == ZoneState::HEATING_STAGE1 || state_new == ZoneState::HEATING_STAGE2;
+  }
+  bool is_cooling() const {
+    return state_new == ZoneState::COOLING_STAGE1 || state_new == ZoneState::COOLING_STAGE2;
+  }
+  bool was_heating() const {
+    return state == ZoneState::HEATING_STAGE1 || state == ZoneState::HEATING_STAGE2;
+  }
+  bool was_cooling() const {
+    return state == ZoneState::COOLING_STAGE1 || state == ZoneState::COOLING_STAGE2;
+  }
+  bool is_active() const { return is_heating() || is_cooling(); }
+  bool was_active() const { return was_heating() || was_cooling(); }
 };
 
 }  // namespace open_zoning

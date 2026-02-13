@@ -67,7 +67,7 @@ components/
   - Modifier `esphome/geothermie_example.yaml` — ajouter le package `component`
 - **Critère de réussite** : Le firmware compile, boote, et affiche "OpenZoning initialized" dans les logs.
 
-#### Phase 0B : Référencement des entités existantes ⬜
+#### Phase 0B : Référencement des entités existantes ✅
 
 - **Description** : Ajouter au `CONFIG_SCHEMA` les références vers les binary sensors (entrées thermostats), switches (dampers, LEDs, sorties) et le select (mode). Le composant les reçoit via `cv.use_id()` et les stocke sans encore les utiliser.
 - **Fichiers à modifier** :
@@ -77,7 +77,7 @@ components/
   - `packages/component.yml` — configuration complète avec les `id` de toutes les entités
 - **Critère de réussite** : `dump_config()` affiche correctement les 6 zones avec leurs entités associées.
 
-#### Phase 0C : Migration de la logique PASS 1-3 ⬜
+#### Phase 0C : Migration de la logique PASS 1-3 ✅
 
 - **Description** : Porter les passes 1 (calcul d'état), 1.5 (cycle court), 2 (purge) et 3 (priorités) du lambda vers les méthodes C++ de `OpenZoningController` et `Zone`. Les macros C deviennent des méthodes appelées dans une boucle `for`.
 - **Fichiers à modifier** :
@@ -222,6 +222,8 @@ components/
 | 2026-02-11 | Plan créé | ✅ |
 | 2026-02-11 | #0 Migration C++ ajoutée (5 phases) | ⬜ En cours |
 | 2026-02-11 | #0 Phase 0A — Scaffolding composant | ✅ En attente de validation compilation |
+| 2026-02-12 | #0 Phase 0B — Référencement entités (binary sensors) | ✅ |
+| 2026-02-12 | #0 Phase 0C — Migration PASS 1-3 en C++ | ✅ |
 
 ---
 

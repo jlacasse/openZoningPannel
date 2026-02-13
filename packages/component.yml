@@ -1,5 +1,5 @@
 # Open Zoning Component — external component declaration
-# Phase 0A: Skeleton — the component compiles and logs a heartbeat
+# Phase 0C: PASS 1-3 logic migrated to C++ (runs in parallel with old lambda)
 
 external_components:
   - source:
@@ -11,3 +11,30 @@ external_components:
 
 open_zoning:
   update_interval: 10s
+  min_cycle_time: 480s   # 8 minutes — must match configurations.yml default
+  purge_duration: 300s   # 5 minutes — matches PURGE_DURATION_MS in automation.yml
+  zones:
+    - y1: Z1_Y1
+      y2: Z1_Y2
+      g:  Z1_G
+      ob: Z1_OB
+    - y1: Z2_Y1
+      y2: Z2_Y2
+      g:  Z2_G
+      ob: Z2_OB
+    - y1: Z3_Y1
+      y2: Z3_Y2
+      g:  Z3_G
+      ob: Z3_OB
+    - y1: Z4_Y1
+      y2: Z4_Y2
+      g:  Z4_G
+      ob: Z4_OB
+    - y1: Z5_Y1
+      y2: Z5_Y2
+      g:  Z5_G
+      ob: Z5_OB
+    - y1: Z6_Y1
+      y2: Z6_Y2
+      g:  Z6_G
+      ob: Z6_OB
