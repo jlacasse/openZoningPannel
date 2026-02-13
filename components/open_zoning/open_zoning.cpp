@@ -72,9 +72,9 @@ void Zone::apply_short_cycle_protection(unsigned long current_time, unsigned lon
       state_new = state;
       if (!short_cycle_protection) {
         short_cycle_protection = true;
+        ESP_LOGW(TAG, "Zone %d short cycle protection ACTIVATED (%lu / %lu ms)",
+                 index + 1, elapsed, min_cycle_time_ms);
       }
-      ESP_LOGW(TAG, "Zone %d short cycle protection active - elapsed: %lu ms / required: %lu ms",
-               index + 1, elapsed, min_cycle_time_ms);
     } else {
       if (short_cycle_protection) {
         short_cycle_protection = false;
@@ -184,6 +184,34 @@ void OpenZoningController::update() {
   // Log summary at debug level
   ESP_LOGD(TAG, "Update cycle complete — max_priority=%d error_flag=%s",
            global_max_priority_, zone_error_flag_ ? "YES" : "no");
+}
+
+void OpenZoningController::loop() {
+  // Process damper operation queue — one I2C write per loop iteration.
+  // This mimics how old ESPHome scripts worked: yield between each GPIO write,
+  // preventing MCP23017 I2C corruption on ESP8266 (bit-banged I2C + WiFi IRQs).
+  if (dq_pos_ >= dq_count_) return;  // nothing pending
+
+  if (millis() < dq_next_ms_) return;  // waiting for delay
+
+  // Execute current operation
+  DamperOp &op = damper_ops_[dq_pos_];
+  if (op.sw) {
+    if (op.turn_on) {
+      op.sw->turn_on();
+    } else {
+      op.sw->turn_off();
+    }
+  }
+
+  dq_pos_++;
+
+  // Schedule next operation
+  if (dq_pos_ < dq_count_) {
+    dq_next_ms_ = millis() + damper_ops_[dq_pos_].delay_ms;
+  } else {
+    ESP_LOGD(TAG, "Damper queue complete (%d ops processed)", dq_count_);
+  }
 }
 
 void OpenZoningController::dump_config() {
@@ -345,8 +373,15 @@ void OpenZoningController::pass3_priority_analysis_() {
 // PASS 4: Damper Control
 // ============================================================================
 void OpenZoningController::pass4_damper_control_() {
+  // Abort any pending damper queue from previous cycle
+  if (dq_pos_ < dq_count_) {
+    ESP_LOGW(TAG, "Damper queue interrupted — %d/%d ops were pending",
+             dq_count_ - dq_pos_, dq_count_);
+  }
+  dq_count_ = 0;
+  dq_pos_ = 0;
+
   bool all_zones_off = (global_max_priority_ == 0);
-  uint8_t stagger_count = 0;
 
   for (uint8_t i = 0; i < num_zones_; i++) {
     if (!zones_[i].enabled)
@@ -366,75 +401,56 @@ void OpenZoningController::pass4_damper_control_() {
       damper_target = 1;  // Active zone: open
     }
 
-    // Apply damper change if needed
+    // Queue damper change if needed
     if (damper_target != z.damper_state) {
       z.damper_state = damper_target;
-      uint32_t offset = stagger_count * 100;  // 100ms between each zone to avoid MCP23017 I2C collisions
       if (damper_target == 1) {
-        ESP_LOGI(TAG, "Zone %d damper opening (offset: %ums)", i + 1, offset);
-        open_damper_(i, offset);
+        ESP_LOGI(TAG, "Zone %d damper -> OPEN", i + 1);
+        queue_open_damper_(i);
       } else {
-        ESP_LOGI(TAG, "Zone %d damper closing (offset: %ums)", i + 1, offset);
-        close_damper_(i, offset);
+        ESP_LOGI(TAG, "Zone %d damper -> CLOSE", i + 1);
+        queue_close_damper_(i);
       }
-      stagger_count++;
     }
+  }
+
+  // Start processing queue
+  if (dq_count_ > 0) {
+    dq_next_ms_ = millis() + damper_ops_[0].delay_ms;
+    ESP_LOGI(TAG, "Damper queue: %d ops scheduled", dq_count_);
   }
 }
 
 // ============================================================================
-// Damper helpers — replaces the 12 ESPHome scripts
-// Uses set_timeout() for the 250ms motor release delay
+// Damper queue methods — replaces the 12 ESPHome scripts
+// Each damper change is decomposed into 3 individual GPIO writes:
+//   1. Turn off opposite direction (50ms gap between zones)
+//   2. Turn off same direction (50ms after step 1)
+//   3. Engage target direction (250ms after step 2 — motor release delay)
+// Processed one-per-loop-iteration in loop() for ESP8266 I2C reliability.
 // ============================================================================
-void OpenZoningController::open_damper_(uint8_t zone, uint32_t delay_offset) {
-  if (zone >= num_zones_) return;
+void OpenZoningController::queue_open_damper_(uint8_t zone) {
+  if (zone >= num_zones_ || dq_count_ + 3 > MAX_DAMPER_OPS) return;
   Zone &z = zones_[zone];
   if (!z.damper_open_sw || !z.damper_close_sw) return;
 
-  // Capture switch pointers for lambda
-  switch_::Switch *open_sw = z.damper_open_sw;
-  switch_::Switch *close_sw = z.damper_close_sw;
+  uint32_t gap = (dq_count_ == 0) ? 0 : 50;  // 50ms gap between zones
 
-  // Step 1: after delay_offset, turn off both directions
-  // Staggering avoids MCP23017 I2C register write collisions
-  char tn_stop[20];
-  snprintf(tn_stop, sizeof(tn_stop), "damper_s_%d", zone);
-  this->set_timeout(tn_stop, delay_offset, [close_sw, open_sw]() {
-    close_sw->turn_off();
-    open_sw->turn_off();
-  });
-
-  // Step 2: after delay_offset + 250ms, engage the open direction
-  char tn_open[20];
-  snprintf(tn_open, sizeof(tn_open), "damper_o_%d", zone);
-  this->set_timeout(tn_open, delay_offset + 250, [open_sw]() {
-    open_sw->turn_on();
-  });
+  damper_ops_[dq_count_++] = {z.damper_close_sw, false, gap};   // stop opposite
+  damper_ops_[dq_count_++] = {z.damper_open_sw, false, 50};     // stop same
+  damper_ops_[dq_count_++] = {z.damper_open_sw, true, 250};     // engage open
 }
 
-void OpenZoningController::close_damper_(uint8_t zone, uint32_t delay_offset) {
-  if (zone >= num_zones_) return;
+void OpenZoningController::queue_close_damper_(uint8_t zone) {
+  if (zone >= num_zones_ || dq_count_ + 3 > MAX_DAMPER_OPS) return;
   Zone &z = zones_[zone];
   if (!z.damper_open_sw || !z.damper_close_sw) return;
 
-  // Capture switch pointers for lambda
-  switch_::Switch *open_sw = z.damper_open_sw;
-  switch_::Switch *close_sw = z.damper_close_sw;
+  uint32_t gap = (dq_count_ == 0) ? 0 : 50;  // 50ms gap between zones
 
-  // Step 1: after delay_offset, turn off both directions
-  char tn_stop[20];
-  snprintf(tn_stop, sizeof(tn_stop), "damper_s_%d", zone);
-  this->set_timeout(tn_stop, delay_offset, [open_sw, close_sw]() {
-    open_sw->turn_off();
-    close_sw->turn_off();
-  });
-
-  // Step 2: after delay_offset + 250ms, engage the close direction
-  char tn_close[20];
-  snprintf(tn_close, sizeof(tn_close), "damper_c_%d", zone);
-  this->set_timeout(tn_close, delay_offset + 250, [close_sw]() {
-    close_sw->turn_on();
-  });
+  damper_ops_[dq_count_++] = {z.damper_open_sw, false, gap};    // stop opposite
+  damper_ops_[dq_count_++] = {z.damper_close_sw, false, 50};    // stop same
+  damper_ops_[dq_count_++] = {z.damper_close_sw, true, 250};    // engage close
 }
 
 // ============================================================================

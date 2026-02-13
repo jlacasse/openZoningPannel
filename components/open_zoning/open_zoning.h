@@ -18,6 +18,7 @@ class OpenZoningController : public PollingComponent {
   // --- PollingComponent overrides ---
   void setup() override;
   void update() override;
+  void loop() override;
   void dump_config() override;
   float get_setup_priority() const override { return setup_priority::DATA; }
 
@@ -50,6 +51,10 @@ class OpenZoningController : public PollingComponent {
   void set_auto_mode(bool v) { auto_mode_ = v; }
   void set_stage2_escalation_delay(uint32_t ms) { stage2_escalation_ms_ = ms; }
 
+  // --- Runtime getters (for template entities in YAML) ---
+  bool get_auto_mode() const { return auto_mode_; }
+  uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }
+
  protected:
   // --- Pass methods ---
   void pass1_calc_zone_states_();
@@ -59,10 +64,23 @@ class OpenZoningController : public PollingComponent {
   void pass4_damper_control_();
   void pass5_output_control_();
 
-  // --- Damper helpers (use set_timeout for 250ms motor release) ---
-  // delay_offset staggers operations to avoid MCP23017 I2C bus collisions
-  void open_damper_(uint8_t zone, uint32_t delay_offset = 0);
-  void close_damper_(uint8_t zone, uint32_t delay_offset = 0);
+  // --- Damper operation queue ---
+  // Each damper change is split into 3 individual I2C operations
+  // processed one-per-loop-iteration for ESP8266 I2C reliability.
+  // This mimics how the old ESPHome scripts worked (yield between each action).
+  struct DamperOp {
+    switch_::Switch *sw;
+    bool turn_on;
+    uint32_t delay_ms;  // ms to wait after previous op before executing
+  };
+  static constexpr uint8_t MAX_DAMPER_OPS = MAX_ZONES * 3;  // 3 steps per damper change
+  DamperOp damper_ops_[MAX_DAMPER_OPS];
+  uint8_t dq_count_{0};
+  uint8_t dq_pos_{0};
+  unsigned long dq_next_ms_{0};
+
+  void queue_open_damper_(uint8_t zone);
+  void queue_close_damper_(uint8_t zone);
 
   // --- Central unit mode application ---
   void apply_mode_(int mode);

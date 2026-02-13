@@ -37,8 +37,36 @@ mcp23017:
   - id: 'mcp23017_0x22'
     address: 0x22
 
-# NOTE: Les entités "Min Cycle Time", "Stage 2 Escalation Delay" et
-# "Geo Auto Mode" sont désormais gérées par le composant open_zoning
-# (paramètres min_cycle_time, stage2_escalation_delay et auto_mode
-# dans component.yml). Les anciens number/switch templates qui
-# utilisaient des globals ont été supprimés.
+# NOTE: Les paramètres min_cycle_time, stage2_escalation_delay et auto_mode
+# sont compilés dans le composant open_zoning (component.yml).
+# Les entités ci-dessous permettent de les ajuster à chaud depuis Home Assistant.
+
+number:
+  - platform: template
+    name: "Geo_min_cycle_time"
+    id: geo_min_cycle_time
+    unit_of_measurement: "s"
+    icon: "mdi:timer-outline"
+    entity_category: config
+    min_value: 60
+    max_value: 900
+    step: 30
+    initial_value: 480
+    optimistic: true
+    set_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_min_cycle_time((uint32_t)(x * 1000));
+
+switch:
+  - platform: template
+    name: "Geo_auto_mode_switch"
+    id: geo_auto_mode_switch
+    icon: "mdi:auto-fix"
+    entity_category: config
+    optimistic: true
+    turn_on_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_auto_mode(true);
+    turn_off_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_auto_mode(false);

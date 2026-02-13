@@ -10,6 +10,7 @@ external_components:
     refresh: 0s
 
 open_zoning:
+  id: open_zoning_ctrl
   update_interval: 10s
   min_cycle_time: 480s              # 8 minutes
   purge_duration: 300s              # 5 minutes
