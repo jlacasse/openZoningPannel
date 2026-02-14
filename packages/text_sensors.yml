@@ -1,0 +1,34 @@
+# Zone state text sensors — published by the open_zoning C++ component
+# Each sensor displays the current state of a zone in Home Assistant
+# (Off, Fan Only, Cooling Stage 1/2, Heating Stage 1/2, Purge, Wait, ERROR)
+
+text_sensor:
+  - platform: template
+    name: "Zone 1 State"
+    id: z1_state_text
+    icon: "mdi:thermostat"
+
+  - platform: template
+    name: "Zone 2 State"
+    id: z2_state_text
+    icon: "mdi:thermostat"
+
+  - platform: template
+    name: "Zone 3 State"
+    id: z3_state_text
+    icon: "mdi:thermostat"
+
+  - platform: template
+    name: "Zone 4 State"
+    id: z4_state_text
+    icon: "mdi:thermostat"
+
+  - platform: template
+    name: "Zone 5 State"
+    id: z5_state_text
+    icon: "mdi:thermostat"
+
+  - platform: template
+    name: "Zone 6 State"
+    id: z6_state_text
+    icon: "mdi:thermostat"

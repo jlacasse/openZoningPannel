@@ -128,6 +128,14 @@ void OpenZoningController::set_zone_dampers(uint8_t index,
   zones_[index].damper_close_sw = damper_close;
 }
 
+void OpenZoningController::set_zone_state_sensor(uint8_t index, text_sensor::TextSensor *sensor) {
+  if (index >= MAX_ZONES) {
+    ESP_LOGE(TAG, "Zone index %d exceeds MAX_ZONES (%d)", index, MAX_ZONES);
+    return;
+  }
+  zones_[index].state_sensor = sensor;
+}
+
 void OpenZoningController::setup() {
   ESP_LOGI(TAG, "OpenZoning initialized — %d zones configured", num_zones_);
 
@@ -152,6 +160,13 @@ void OpenZoningController::setup() {
   current_mode_ = 0;
   last_active_mode_ = 0;
   stage1_start_ms_ = 0;
+
+  // Publish initial "Off" state to all text sensors
+  for (uint8_t i = 0; i < num_zones_; i++) {
+    if (zones_[i].state_sensor) {
+      zones_[i].state_sensor->publish_state("Off");
+    }
+  }
 }
 
 void OpenZoningController::update() {
@@ -177,6 +192,10 @@ void OpenZoningController::update() {
                i + 1,
                state_to_string(zones_[i].state),
                state_to_string(zones_[i].state_new));
+      // Publish to text sensor for HA dashboard
+      if (zones_[i].state_sensor) {
+        zones_[i].state_sensor->publish_state(state_to_string(zones_[i].state_new));
+      }
     }
     zones_[i].state = zones_[i].state_new;
   }

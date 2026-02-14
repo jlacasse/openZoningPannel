@@ -5,6 +5,7 @@
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/select/select.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 #include "zone.h"
 
 namespace esphome {
@@ -31,6 +32,7 @@ class OpenZoningController : public PollingComponent {
   void set_zone_dampers(uint8_t index,
                         switch_::Switch *damper_open,
                         switch_::Switch *damper_close);
+  void set_zone_state_sensor(uint8_t index, text_sensor::TextSensor *sensor);
   void set_num_zones(uint8_t n) { num_zones_ = n; }
   void set_min_cycle_time(uint32_t ms) { min_cycle_time_ms_ = ms; }
   void set_purge_duration(uint32_t ms) { purge_duration_ms_ = ms; }

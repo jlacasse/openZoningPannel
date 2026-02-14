@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/switch/switch.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 namespace esphome {
 namespace open_zoning {
@@ -78,6 +79,9 @@ struct Zone {
   // --- Damper output switches (set via codegen from __init__.py) ---
   switch_::Switch *damper_open_sw{nullptr};
   switch_::Switch *damper_close_sw{nullptr};
+
+  // --- Text sensor for zone state display in HA ---
+  text_sensor::TextSensor *state_sensor{nullptr};
 
   // Current and next computed state
   ZoneState state{ZoneState::OFF};

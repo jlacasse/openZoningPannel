@@ -11,4 +11,5 @@ packages:
   binary_sensors: github://jlacasse/openZoningPannel/packages/binary_sensors.yml
   switches: github://jlacasse/openZoningPannel/packages/switches.yml
   select: github://jlacasse/openZoningPannel/packages/select.yml
+  text_sensors: github://jlacasse/openZoningPannel/packages/text_sensors.yml
   component: github://jlacasse/openZoningPannel/packages/component.yml

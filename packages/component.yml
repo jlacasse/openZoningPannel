@@ -43,33 +43,39 @@ open_zoning:
       ob: Z1_OB
       damper_open:  Z1_damper_open
       damper_close: Z1_damper_close
+      state_sensor: z1_state_text
     - y1: Z2_Y1
       y2: Z2_Y2
       g:  Z2_G
       ob: Z2_OB
       damper_open:  Z2_damper_open
       damper_close: Z2_damper_close
+      state_sensor: z2_state_text
     - y1: Z3_Y1
       y2: Z3_Y2
       g:  Z3_G
       ob: Z3_OB
       damper_open:  Z3_damper_open
       damper_close: Z3_damper_close
+      state_sensor: z3_state_text
     - y1: Z4_Y1
       y2: Z4_Y2
       g:  Z4_G
       ob: Z4_OB
       damper_open:  Z4_damper_open
       damper_close: Z4_damper_close
+      state_sensor: z4_state_text
     - y1: Z5_Y1
       y2: Z5_Y2
       g:  Z5_G
       ob: Z5_OB
       damper_open:  Z5_damper_open
       damper_close: Z5_damper_close
+      state_sensor: z5_state_text
     - y1: Z6_Y1
       y2: Z6_Y2
       g:  Z6_G
       ob: Z6_OB
       damper_open:  Z6_damper_open
       damper_close: Z6_damper_close
+      state_sensor: z6_state_text

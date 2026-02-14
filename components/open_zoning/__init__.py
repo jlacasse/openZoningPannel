@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import binary_sensor, switch, select
+from esphome.components import binary_sensor, switch, select, text_sensor
 from esphome.const import CONF_ID
 
 CODEOWNERS = ["@jlacasse"]
@@ -20,6 +20,7 @@ CONF_G = "g"
 CONF_OB = "ob"
 CONF_DAMPER_OPEN = "damper_open"
 CONF_DAMPER_CLOSE = "damper_close"
+CONF_STATE_SENSOR = "state_sensor"
 
 # Configuration keys — timing
 CONF_MIN_CYCLE_TIME = "min_cycle_time"
@@ -54,6 +55,7 @@ ZONE_SCHEMA = cv.Schema(
         cv.Required(CONF_OB): cv.use_id(binary_sensor.BinarySensor),
         cv.Required(CONF_DAMPER_OPEN): cv.use_id(switch.Switch),
         cv.Required(CONF_DAMPER_CLOSE): cv.use_id(switch.Switch),
+        cv.Optional(CONF_STATE_SENSOR): cv.use_id(text_sensor.TextSensor),
     }
 )
 
@@ -113,6 +115,10 @@ async def to_code(config):
         damper_open = await cg.get_variable(zone_conf[CONF_DAMPER_OPEN])
         damper_close = await cg.get_variable(zone_conf[CONF_DAMPER_CLOSE])
         cg.add(var.set_zone_dampers(i, damper_open, damper_close))
+
+        if CONF_STATE_SENSOR in zone_conf:
+            state_sensor = await cg.get_variable(zone_conf[CONF_STATE_SENSOR])
+            cg.add(var.set_zone_state_sensor(i, state_sensor))
 
     # Central unit outputs
     out_y1 = await cg.get_variable(config[CONF_OUT_Y1])
