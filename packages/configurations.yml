@@ -64,6 +64,7 @@ switch:
     icon: "mdi:auto-fix"
     entity_category: config
     optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
     turn_on_action:
       - lambda: |-
           id(open_zoning_ctrl).set_auto_mode(true);
