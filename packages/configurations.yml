@@ -57,6 +57,21 @@ number:
       - lambda: |-
           id(open_zoning_ctrl).set_min_cycle_time((uint32_t)(x * 1000));
 
+  - platform: template
+    name: "Geo_purge_duration"
+    id: geo_purge_duration
+    unit_of_measurement: "s"
+    icon: "mdi:air-filter"
+    entity_category: config
+    min_value: 60
+    max_value: 600
+    step: 30
+    initial_value: 300
+    optimistic: true
+    set_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_purge_duration((uint32_t)(x * 1000));
+
 switch:
   - platform: template
     name: "Geo_auto_mode_switch"

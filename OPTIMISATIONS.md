@@ -115,8 +115,8 @@ components/
 ## 🟢 Priorité Haute
 
 ### 1. Durée de purge configurable
-- **Fichier(s)** : `packages/automation.yml`, `packages/configurations.yml`, `packages/globals.yml`
-- **État** : ⬜ À faire
+- **Fichier(s)** : `packages/configurations.yml`, `components/open_zoning/open_zoning.h`
+- **État** : ✅ Fait
 - **Description** : La durée de purge est hardcodée à 5 minutes (`PURGE_DURATION_MS = 300000`) dans le lambda de la PASS 2. Ajouter un `number` template configurable depuis Home Assistant, comme `min_cycle_time` et `stage2_escalation_delay`.
 - **Bénéfice** : Permettre à l'utilisateur d'ajuster la durée de purge selon son installation sans recompiler.
 
@@ -226,6 +226,7 @@ components/
 | 2026-02-12 | #0 Phase 0C — Migration PASS 1-3 en C++ | ✅ |
 | 2026-02-12 | #0 Phase 0D — Migration PASS 4-5 + dampers en C++ | ✅ |
 | 2026-02-12 | #0 Phase 0E — Nettoyage et suppression ancien code | ✅ |
+| 2026-03-02 | #1 Durée de purge configurable | ✅ |
 
 ---
 

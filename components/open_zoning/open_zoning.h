@@ -56,6 +56,7 @@ class OpenZoningController : public PollingComponent {
   // --- Runtime getters (for template entities in YAML) ---
   bool get_auto_mode() const { return auto_mode_; }
   uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }
+  uint32_t get_purge_duration_ms() const { return purge_duration_ms_; }
 
  protected:
   // --- Pass methods ---
