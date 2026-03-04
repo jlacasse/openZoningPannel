@@ -1,4 +1,5 @@
 #include "open_zoning.h"
+#include "esphome/core/application.h"
 
 namespace esphome {
 namespace open_zoning {
