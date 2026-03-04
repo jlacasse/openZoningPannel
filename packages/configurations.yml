@@ -86,3 +86,10 @@ switch:
     turn_off_action:
       - lambda: |-
           id(open_zoning_ctrl).set_auto_mode(false);
+
+binary_sensor:
+  - platform: template
+    name: "Geo_i2c_health"
+    id: geo_i2c_health
+    device_class: connectivity
+    entity_category: diagnostic

@@ -123,7 +123,7 @@ components/
 ### 2. Zones enable/disable
 - **Fichier(s)** : `packages/configurations.yml`, `packages/automation.yml`, `packages/globals.yml`
 - **État** : ⬜ À faire
-- **Description** : Ajouter un switch par zone (`Zone X Enabled`) permettant de désactiver une zone inutilisée. Une zone désactivée serait ignorée dans tous les calculs (PASS 1-5) et son clapet resterait ouvert.
+- **Description** : Ajouter un switch par zone (`Zone X Enabled`) permettant de désactiver une zone inutilisée. Une zone désactivée serait ignorée dans tous les calculs (PASS 1-5) et son clapet resterait fermé.
 - **Bénéfice** : Adaptabilité à différentes installations (3, 4, 5 ou 6 zones).
 
 ### 3. Capteurs de diagnostic
@@ -141,23 +141,6 @@ components/
 ---
 
 ## 🟡 Priorité Moyenne
-
-### 4. Macros PRIORITY_CALC et APPLY_WAIT
-- **Fichier(s)** : `packages/automation.yml`
-- **État** : ⬜ À faire (rendu obsolète par #0 — les macros deviennent des boucles `for` en C++)
-- **Description** : Le calcul de priorité (PASS 3) est copié-collé 6 fois. Créer des macros :
-  ```cpp
-  #define CALC_PRIORITY(N) \
-    if (z##N##_state_new == ZONE_PURGE) z##N##_priority = 6; \
-    else if (z##N##_state_new == ZONE_HEATING_STAGE1 || z##N##_state_new == ZONE_HEATING_STAGE2) z##N##_priority = 4; \
-    else if (z##N##_state_new == ZONE_COOLING_STAGE1 || z##N##_state_new == ZONE_COOLING_STAGE2) z##N##_priority = 2; \
-    else if (z##N##_state_new == ZONE_FAN_ONLY) z##N##_priority = 1;
-
-  #define APPLY_WAIT(N) \
-    if (z##N##_priority > 0 && z##N##_priority < global_max_priority && z##N##_state_new != ZONE_ERROR) \
-      z##N##_state_new = ZONE_WAIT;
-  ```
-- **Bénéfice** : Réduction de la duplication, meilleure maintenabilité.
 
 ### 5. Persistance de `last_active_mode` au redémarrage
 - **Fichier(s)** : `packages/globals.yml`, `packages/automation.yml`
@@ -190,8 +173,8 @@ components/
 - **Bénéfice** : Économie ~60 octets de RAM (marginal mais utile sur ESP8266).
 
 ### 8. Watchdog I2C pour MCP23017
-- **Fichier(s)** : `packages/automation.yml` ou nouveau fichier `packages/i2c_watchdog.yml`
-- **État** : ⬜ À faire
+- **Fichier(s)** : `packages/configurations.yml`, `packages/component.yml`, `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`, `components/open_zoning/__init__.py`
+- **État** : ✅ Fait
 - **Description** : Les MCP23017 via I2C peuvent parfois se bloquer (bus stuck). Ajouter :
   - Un compteur d'erreurs I2C
   - Un redémarrage automatique du bus I2C après X échecs consécutifs
@@ -227,6 +210,7 @@ components/
 | 2026-02-12 | #0 Phase 0D — Migration PASS 4-5 + dampers en C++ | ✅ |
 | 2026-02-12 | #0 Phase 0E — Nettoyage et suppression ancien code | ✅ |
 | 2026-03-02 | #1 Durée de purge configurable | ✅ |
+| 2026-03-03 | #8 Watchdog I2C pour MCP23017 | ✅ |
 
 ---
 

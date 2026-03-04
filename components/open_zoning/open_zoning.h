@@ -6,6 +6,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/select/select.h"
 #include "esphome/components/text_sensor/text_sensor.h"
+#include "esphome/components/i2c/i2c.h"
 #include "zone.h"
 
 namespace esphome {
@@ -53,6 +54,11 @@ class OpenZoningController : public PollingComponent {
   void set_auto_mode(bool v) { auto_mode_ = v; }
   void set_stage2_escalation_delay(uint32_t ms) { stage2_escalation_ms_ = ms; }
 
+  // --- I2C watchdog setters ---
+  void set_i2c_bus(i2c::I2CBus *bus) { i2c_bus_ = bus; }
+  void set_i2c_health_sensor(binary_sensor::BinarySensor *s) { i2c_health_sensor_ = s; }
+  void set_i2c_error_threshold(uint8_t n) { i2c_error_threshold_ = n; }
+
   // --- Runtime getters (for template entities in YAML) ---
   bool get_auto_mode() const { return auto_mode_; }
   uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }
@@ -66,6 +72,7 @@ class OpenZoningController : public PollingComponent {
   void pass3_priority_analysis_();
   void pass4_damper_control_();
   void pass5_output_control_();
+  void check_i2c_health_();
 
   // --- Damper operation queue ---
   // Each damper change is split into 3 individual I2C operations
@@ -114,6 +121,13 @@ class OpenZoningController : public PollingComponent {
 
   // --- Mode select entity ---
   select::Select *mode_select_{nullptr};
+
+  // --- I2C watchdog ---
+  i2c::I2CBus *i2c_bus_{nullptr};
+  binary_sensor::BinarySensor *i2c_health_sensor_{nullptr};
+  uint8_t i2c_error_count_{0};
+  uint8_t i2c_error_threshold_{3};
+  bool i2c_healthy_{true};
 
   // --- Runtime state ---
   bool zone_error_flag_{false};

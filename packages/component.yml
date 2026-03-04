@@ -17,6 +17,11 @@ open_zoning:
   stage2_escalation_delay: 3600s    # 1 hour
   auto_mode: true
 
+  # I2C watchdog — probes MCP23017@0x20 every 10s, reboots after N consecutive failures
+  i2c_bus: bus_a
+  i2c_health_sensor: geo_i2c_health
+  i2c_error_threshold: 3
+
   # Central unit output switches
   out_y1: Out_Y1
   out_y2: Out_Y2

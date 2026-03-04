@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import binary_sensor, switch, select, text_sensor
+from esphome.components import binary_sensor, switch, select, text_sensor, i2c
 from esphome.const import CONF_ID
 
 CODEOWNERS = ["@jlacasse"]
@@ -46,6 +46,11 @@ CONF_LED_ERROR = "led_error"
 CONF_MODE_SELECT = "mode_select"
 CONF_AUTO_MODE = "auto_mode"
 
+# Configuration keys — I2C watchdog
+CONF_I2C_BUS = "i2c_bus"
+CONF_I2C_HEALTH_SENSOR = "i2c_health_sensor"
+CONF_I2C_ERROR_THRESHOLD = "i2c_error_threshold"
+
 # Per-zone schema: thermostat inputs + damper switches
 ZONE_SCHEMA = cv.Schema(
     {
@@ -86,6 +91,10 @@ CONFIG_SCHEMA = cv.Schema(
         # Mode select
         cv.Required(CONF_MODE_SELECT): cv.use_id(select.Select),
         cv.Optional(CONF_AUTO_MODE, default=True): cv.boolean,
+        # I2C watchdog
+        cv.Optional(CONF_I2C_BUS): cv.use_id(i2c.I2CBus),
+        cv.Optional(CONF_I2C_HEALTH_SENSOR): cv.use_id(binary_sensor.BinarySensor),
+        cv.Optional(CONF_I2C_ERROR_THRESHOLD, default=3): cv.int_range(min=1, max=10),
     }
 ).extend(cv.polling_component_schema("10s"))
 
@@ -153,3 +162,12 @@ async def to_code(config):
     # Mode select entity
     mode_select = await cg.get_variable(config[CONF_MODE_SELECT])
     cg.add(var.set_mode_select(mode_select))
+
+    # I2C watchdog
+    cg.add(var.set_i2c_error_threshold(config[CONF_I2C_ERROR_THRESHOLD]))
+    if CONF_I2C_BUS in config:
+        bus = await cg.get_variable(config[CONF_I2C_BUS])
+        cg.add(var.set_i2c_bus(bus))
+    if CONF_I2C_HEALTH_SENSOR in config:
+        health_sensor = await cg.get_variable(config[CONF_I2C_HEALTH_SENSOR])
+        cg.add(var.set_i2c_health_sensor(health_sensor))

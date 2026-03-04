@@ -167,6 +167,11 @@ void OpenZoningController::setup() {
       zones_[i].state_sensor->publish_state("Off");
     }
   }
+
+  // Publish initial healthy state to I2C health sensor
+  if (i2c_health_sensor_) {
+    i2c_health_sensor_->publish_state(true);
+  }
 }
 
 void OpenZoningController::update() {
@@ -174,6 +179,9 @@ void OpenZoningController::update() {
     ESP_LOGW(TAG, "No zones configured — skipping update");
     return;
   }
+
+  // I2C watchdog: probe MCP23017 before any I2C operations
+  check_i2c_health_();
 
   // Execute PASS 1–3
   pass1_calc_zone_states_();
@@ -241,6 +249,10 @@ void OpenZoningController::dump_config() {
   ESP_LOGCONFIG(TAG, "  Purge duration: %u ms", purge_duration_ms_);
   ESP_LOGCONFIG(TAG, "  Stage 2 escalation: %u ms", stage2_escalation_ms_);
   ESP_LOGCONFIG(TAG, "  Auto mode: %s", auto_mode_ ? "YES" : "NO");
+  ESP_LOGCONFIG(TAG, "  I2C watchdog: %s (threshold: %d errors)",
+                i2c_bus_ ? "ENABLED" : "DISABLED", i2c_error_threshold_);
+  if (i2c_health_sensor_)
+    ESP_LOGCONFIG(TAG, "  I2C health sensor: %s", i2c_health_sensor_->get_name().c_str());
   for (uint8_t i = 0; i < num_zones_; i++) {
     ESP_LOGCONFIG(TAG, "  Zone %d:", i + 1);
     ESP_LOGCONFIG(TAG, "    Y1: %s", zones_[i].y1 ? zones_[i].y1->get_name().c_str() : "NOT SET");
@@ -632,6 +644,43 @@ void OpenZoningController::apply_mode_(int mode) {
   if (led_heat_)  { if (l_heat)  led_heat_->turn_on();  else led_heat_->turn_off();  }
   if (led_cool_)  { if (l_cool)  led_cool_->turn_on();  else led_cool_->turn_off();  }
   if (led_error_) { if (l_error) led_error_->turn_on(); else led_error_->turn_off(); }
+}
+
+// ============================================================================
+// I2C Watchdog
+// ============================================================================
+void OpenZoningController::check_i2c_health_() {
+  if (i2c_bus_ == nullptr) return;
+
+  // Probe MCP23017 at 0x20 with a 0-byte write — just checks for address ACK.
+  // All three expanders share the same bus; if 0x20 is stuck, the bus is stuck.
+  const uint8_t dummy = 0;
+  i2c::ErrorCode result = i2c_bus_->write(0x20, &dummy, 0, true);
+
+  if (result != i2c::ERROR_OK) {
+    i2c_error_count_++;
+    ESP_LOGW(TAG, "I2C watchdog: MCP23017@0x20 no ACK (%d/%d) — error code: %d",
+             i2c_error_count_, i2c_error_threshold_, static_cast<int>(result));
+    if (i2c_healthy_) {
+      i2c_healthy_ = false;
+      if (i2c_health_sensor_) i2c_health_sensor_->publish_state(false);
+    }
+    if (i2c_error_count_ >= i2c_error_threshold_) {
+      ESP_LOGE(TAG, "I2C watchdog: bus stuck after %d consecutive failures — rebooting",
+               i2c_error_count_);
+      App.safe_reboot();
+    }
+  } else {
+    if (i2c_error_count_ > 0) {
+      ESP_LOGI(TAG, "I2C watchdog: MCP23017@0x20 recovered after %d failed checks",
+               i2c_error_count_);
+    }
+    i2c_error_count_ = 0;
+    if (!i2c_healthy_) {
+      i2c_healthy_ = true;
+      if (i2c_health_sensor_) i2c_health_sensor_->publish_state(true);
+    }
+  }
 }
 
 }  // namespace open_zoning
