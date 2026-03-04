@@ -59,16 +59,22 @@ class OpenZoningController : public PollingComponent {
   void set_i2c_health_sensor(binary_sensor::BinarySensor *s) { i2c_health_sensor_ = s; }
   void set_i2c_error_threshold(uint8_t n) { i2c_error_threshold_ = n; }
 
+  // --- Minimum zone demand setters ---
+  void set_min_active_zones(uint8_t n) { min_active_zones_ = n; }
+  void set_min_demand_override_delay(uint32_t ms) { min_demand_override_ms_ = ms; }
+
   // --- Runtime getters (for template entities in YAML) ---
   bool get_auto_mode() const { return auto_mode_; }
   uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }
   uint32_t get_purge_duration_ms() const { return purge_duration_ms_; }
+  uint8_t get_min_active_zones() const { return min_active_zones_; }
 
  protected:
   // --- Pass methods ---
   void pass1_calc_zone_states_();
   void pass1_5_short_cycle_protection_();
   void pass2_purge_management_();
+  void pass2_5_minimum_demand_();
   void pass3_priority_analysis_();
   void pass4_damper_control_();
   void pass5_output_control_();
@@ -128,6 +134,11 @@ class OpenZoningController : public PollingComponent {
   uint8_t i2c_error_count_{0};
   uint8_t i2c_error_threshold_{3};
   bool i2c_healthy_{true};
+
+  // --- Minimum zone demand ---
+  uint8_t min_active_zones_{1};           // 1 = disabled (all single requests allowed)
+  uint32_t min_demand_override_ms_{1800000}; // 30 min emergency override
+  unsigned long min_demand_wait_start_ms_{0};
 
   // --- Runtime state ---
   bool zone_error_flag_{false};

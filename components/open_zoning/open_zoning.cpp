@@ -188,6 +188,7 @@ void OpenZoningController::update() {
   pass1_calc_zone_states_();
   pass1_5_short_cycle_protection_();
   pass2_purge_management_();
+  pass2_5_minimum_demand_();
   pass3_priority_analysis_();
 
   // Execute PASS 4–5
@@ -250,6 +251,10 @@ void OpenZoningController::dump_config() {
   ESP_LOGCONFIG(TAG, "  Purge duration: %u ms", purge_duration_ms_);
   ESP_LOGCONFIG(TAG, "  Stage 2 escalation: %u ms", stage2_escalation_ms_);
   ESP_LOGCONFIG(TAG, "  Auto mode: %s", auto_mode_ ? "YES" : "NO");
+  ESP_LOGCONFIG(TAG, "  Min active zones: %d%s", min_active_zones_,
+                min_active_zones_ <= 1 ? " (disabled)" : "");
+  if (min_active_zones_ > 1)
+    ESP_LOGCONFIG(TAG, "  Min demand override: %u ms", min_demand_override_ms_);
   ESP_LOGCONFIG(TAG, "  I2C watchdog: %s (threshold: %d errors)",
                 i2c_bus_ ? "ENABLED" : "DISABLED", i2c_error_threshold_);
   if (i2c_health_sensor_)
@@ -645,6 +650,72 @@ void OpenZoningController::apply_mode_(int mode) {
   if (led_heat_)  { if (l_heat)  led_heat_->turn_on();  else led_heat_->turn_off();  }
   if (led_cool_)  { if (l_cool)  led_cool_->turn_on();  else led_cool_->turn_off();  }
   if (led_error_) { if (l_error) led_error_->turn_on(); else led_error_->turn_off(); }
+}
+
+// ============================================================================
+// PASS 2.5: Minimum Zone Demand Threshold
+// ============================================================================
+void OpenZoningController::pass2_5_minimum_demand_() {
+  if (min_active_zones_ <= 1) return;  // Feature disabled
+
+  // Count zones currently demanding (active states, not Purge/Error/Wait/Off)
+  uint8_t demanding = 0;
+  for (uint8_t i = 0; i < num_zones_; i++) {
+    if (!zones_[i].enabled) continue;
+    ZoneState s = zones_[i].state_new;
+    if (s == ZoneState::HEATING_STAGE1 || s == ZoneState::HEATING_STAGE2 ||
+        s == ZoneState::COOLING_STAGE1 || s == ZoneState::COOLING_STAGE2 ||
+        s == ZoneState::FAN_ONLY) {
+      demanding++;
+    }
+  }
+
+  // Threshold met — reset override timer, let all zones through
+  if (demanding >= min_active_zones_) {
+    min_demand_wait_start_ms_ = 0;
+    return;
+  }
+
+  // System currently running — do not interrupt an active cycle
+  if (current_mode_ != 0) return;
+
+  // No zones demanding at all — nothing to hold
+  if (demanding == 0) {
+    min_demand_wait_start_ms_ = 0;
+    return;
+  }
+
+  // Below threshold and system is off — apply hold
+  unsigned long now_ms = millis();
+
+  // Start override timer on first hold cycle
+  if (min_demand_wait_start_ms_ == 0) {
+    min_demand_wait_start_ms_ = now_ms;
+    ESP_LOGD(TAG, "PASS2.5: threshold not met (%d/%d zones) — holding, override in %u ms",
+             demanding, min_active_zones_, min_demand_override_ms_);
+  }
+
+  // Override: zone(s) have been waiting too long — force start
+  if (min_demand_override_ms_ > 0 &&
+      (now_ms - min_demand_wait_start_ms_) >= min_demand_override_ms_) {
+    ESP_LOGW(TAG, "PASS2.5: emergency override — zone(s) waiting >%u ms, forcing start",
+             min_demand_override_ms_);
+    min_demand_wait_start_ms_ = 0;
+    return;
+  }
+
+  // Hold active-state zones to WAIT
+  for (uint8_t i = 0; i < num_zones_; i++) {
+    if (!zones_[i].enabled) continue;
+    ZoneState s = zones_[i].state_new;
+    if (s == ZoneState::HEATING_STAGE1 || s == ZoneState::HEATING_STAGE2 ||
+        s == ZoneState::COOLING_STAGE1 || s == ZoneState::COOLING_STAGE2 ||
+        s == ZoneState::FAN_ONLY) {
+      zones_[i].state_new = ZoneState::WAIT;
+      ESP_LOGD(TAG, "PASS2.5: Zone %d held (WAIT) — waiting for %d/%d zones",
+               i + 1, demanding, min_active_zones_);
+    }
+  }
 }
 
 // ============================================================================

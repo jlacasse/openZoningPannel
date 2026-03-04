@@ -126,6 +126,12 @@ components/
 - **Description** : Ajouter un switch par zone (`Zone X Enabled`) permettant de désactiver une zone inutilisée. Une zone désactivée serait ignorée dans tous les calculs (PASS 1-5) et son clapet resterait fermé.
 - **Bénéfice** : Adaptabilité à différentes installations (3, 4, 5 ou 6 zones).
 
+### 11. Seuil de démarrage minimum (min_active_zones)
+- **Fichier(s)** : `packages/configurations.yml`, `packages/component.yml`, `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`, `components/open_zoning/__init__.py`
+- **État** : ✅ Fait
+- **Description** : Nouvelle PASS 2.5 — Le système ne démarre que si N zones sont simultanément en demande (paramètre `min_active_zones`, 1–6, défaut 1 = désactivé). Un timer d'urgence (`min_demand_override_delay`, défaut 30 min) force le démarrage si une zone attend trop longtemps seule. N'interrompt pas un cycle déjà en cours.
+- **Bénéfice** : Réduction des cycles courts sur les géothermies, meilleur COP, moins d'usure.
+
 ### 3. Capteurs de diagnostic
 - **Fichier(s)** : `packages/text_sensors.yml` ou nouveau fichier `packages/sensors.yml`
 - **État** : ⬜ À faire
@@ -211,6 +217,7 @@ components/
 | 2026-02-12 | #0 Phase 0E — Nettoyage et suppression ancien code | ✅ |
 | 2026-03-02 | #1 Durée de purge configurable | ✅ |
 | 2026-03-03 | #8 Watchdog I2C pour MCP23017 | ✅ |
+| 2026-03-03 | #11 Seuil de démarrage minimum (min_active_zones) | ✅ |
 
 ---
 

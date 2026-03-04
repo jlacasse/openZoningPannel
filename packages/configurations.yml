@@ -72,6 +72,36 @@ number:
       - lambda: |-
           id(open_zoning_ctrl).set_purge_duration((uint32_t)(x * 1000));
 
+  - platform: template
+    name: "Geo_min_active_zones"
+    id: geo_min_active_zones
+    unit_of_measurement: "zones"
+    icon: "mdi:home-group"
+    entity_category: config
+    min_value: 1
+    max_value: 6
+    step: 1
+    initial_value: 1
+    optimistic: true
+    set_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_min_active_zones((uint8_t)(x));
+
+  - platform: template
+    name: "Geo_min_demand_override_delay"
+    id: geo_min_demand_override_delay
+    unit_of_measurement: "min"
+    icon: "mdi:timer-alert-outline"
+    entity_category: config
+    min_value: 5
+    max_value: 120
+    step: 5
+    initial_value: 30
+    optimistic: true
+    set_action:
+      - lambda: |-
+          id(open_zoning_ctrl).set_min_demand_override_delay((uint32_t)(x * 60000));
+
 switch:
   - platform: template
     name: "Geo_auto_mode_switch"

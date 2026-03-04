@@ -51,6 +51,10 @@ CONF_I2C_BUS = "i2c_bus"
 CONF_I2C_HEALTH_SENSOR = "i2c_health_sensor"
 CONF_I2C_ERROR_THRESHOLD = "i2c_error_threshold"
 
+# Configuration keys — minimum zone demand
+CONF_MIN_ACTIVE_ZONES = "min_active_zones"
+CONF_MIN_DEMAND_OVERRIDE_DELAY = "min_demand_override_delay"
+
 # Per-zone schema: thermostat inputs + damper switches
 ZONE_SCHEMA = cv.Schema(
     {
@@ -95,6 +99,9 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_I2C_BUS): cv.use_id(i2c.I2CBus),
         cv.Optional(CONF_I2C_HEALTH_SENSOR): cv.use_id(binary_sensor.BinarySensor),
         cv.Optional(CONF_I2C_ERROR_THRESHOLD, default=3): cv.int_range(min=1, max=10),
+        # Minimum zone demand
+        cv.Optional(CONF_MIN_ACTIVE_ZONES, default=1): cv.int_range(min=1, max=6),
+        cv.Optional(CONF_MIN_DEMAND_OVERRIDE_DELAY, default="1800s"): cv.positive_time_period_milliseconds,
     }
 ).extend(cv.polling_component_schema("10s"))
 
@@ -171,3 +178,7 @@ async def to_code(config):
     if CONF_I2C_HEALTH_SENSOR in config:
         health_sensor = await cg.get_variable(config[CONF_I2C_HEALTH_SENSOR])
         cg.add(var.set_i2c_health_sensor(health_sensor))
+
+    # Minimum zone demand
+    cg.add(var.set_min_active_zones(config[CONF_MIN_ACTIVE_ZONES]))
+    cg.add(var.set_min_demand_override_delay(config[CONF_MIN_DEMAND_OVERRIDE_DELAY]))

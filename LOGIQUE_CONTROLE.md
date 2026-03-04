@@ -4,7 +4,7 @@
 
 Ce document décrit la logique de contrôle pour un système de chauffage, ventilation et climatisation (HVAC) à 6 zones avec gestion intelligente des priorités, protection contre les cycles courts et contrôle automatique des clapets.
 
-L'ensemble de la logique est implémenté dans le composant ESPHome C++ `open_zoning`, sous forme de 5 passes d'analyse exécutées toutes les 10 secondes par la méthode `update()` de `OpenZoningController`.
+L'ensemble de la logique est implémenté dans le composant ESPHome C++ `open_zoning`, sous forme de 6 passes d'analyse exécutées toutes les 10 secondes par la méthode `update()` de `OpenZoningController`.
 
 ## Architecture C++
 
@@ -89,6 +89,24 @@ Le système utilise 5 passes exécutées toutes les 10 secondes dans `OpenZoning
    - Si c'est la dernière zone → démarrer purge (`purge_end_ms = now + purge_duration`)
 3. Gestion du timer de purge actif
 
+### PASS 2.5 : Seuil de démarrage minimum (`pass2_5_minimum_demand_()`)
+
+**Principe** : Le système ne démarre que si au moins N zones sont simultanément en demande. Paramètre `min_active_zones` (1–6, défaut 1 = désactivé).
+
+**Logique** :
+1. Si `min_active_zones <= 1` → retour immédiat (fonctionnement normal)
+2. Comptage des zones en état actif (`HEATING_*`, `COOLING_*`, `FAN_ONLY`)
+3. Si le seuil est atteint → reset du timer d'urgence, toutes les zones passent normalement
+4. Si le système tourne déjà (`current_mode_ != 0`) → ne pas interrompre le cycle en cours
+5. Si sous le seuil et système à l'arrêt :
+   - Démarrage du timer d'urgence (`min_demand_wait_start_ms_`) au premier cycle de hold
+   - Si `min_demand_override_delay` écoulé → log `WARN` + démarrage forcé (urgence)
+   - Sinon → toutes les zones actives passent en `WAIT`
+
+**Notes** :
+- La PURGE et ERROR ne sont jamais bloquées par cette passe
+- Le timer d'urgence se réinitialise dès que le seuil est atteint
+
 ### PASS 3 : Analyse de priorité et états d'attente (`pass3_priority_analysis_()`)
 
 **Hiérarchie** (via `state_to_priority()` dans `zone.h`) :
@@ -162,11 +180,13 @@ Configurés dans `component.yml` et passés au composant via `__init__.py` :
 
 | Paramètre | Clé YAML | Défaut | Description |
 |-----------|----------|--------|-------------|
-| Intervalle de mise à jour | `update_interval` | 10s | Fréquence d'exécution des 5 passes |
+| Intervalle de mise à jour | `update_interval` | 10s | Fréquence d'exécution des passes |
 | Temps minimum de cycle | `min_cycle_time` | 480s (8 min) | Protection équipement |
 | Durée de purge | `purge_duration` | 300s (5 min) | Temps de purge après arrêt |
 | Délai escalation Stage 2 | `stage2_escalation_delay` | 3600s (1h) | Timer avant auto-escalation |
 | Mode automatique | `auto_mode` | true | PASS 5 active ou non |
+| Seuil de demande minimum | `min_active_zones` | 1 (désactivé) | N zones requises pour démarrer |
+| Délai d'urgence demande | `min_demand_override_delay` | 1800s (30 min) | Délai avant override du seuil |
 
 ## Logs et débogage
 
@@ -207,6 +227,12 @@ Tous les logs utilisent le tag `open_zoning` avec les niveaux suivants :
 │  PASS 2: Gestion purge  │
 │  (dernière zone only)   │
 └───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  PASS 2.5: Seuil        │
+│  demande minimum        │
+└───────────▬───────────┘
             │
             ▼
 ┌─────────────────────────┐
@@ -265,6 +291,13 @@ Tous les logs utilisent le tag `open_zoning` avec les niveaux suivants :
 - `apply_short_cycle_protection()` maintient zone 1 en `HEATING`
 - Après 8 min totales → autorisation d'arrêt ou purge
 
+### Cas 5 : Seuil de démarrage minimum (min_active_zones = 2)
+
+- Zone 1 seule demande chauffage à 2h du matin
+- PASS 2.5 : 1 zone < seuil de 2 → Zone 1 passe en `WAIT`, timer d'urgence démarre
+- 15 min plus tard, Zone 3 s'allume → 2 zones ≥ seuil → les deux zones démarrent normalement
+- Si Zone 3 ne s'allume jamais et 30 min s'écoulent → override d'urgence, Zone 1 démarre seule
+
 ---
 
-*Document mis à jour le 12 février 2026 — architecture C++ (composant open_zoning)*
+*Document mis à jour le 3 mars 2026 — ajout PASS 2.5 (seuil de démarrage minimum)*

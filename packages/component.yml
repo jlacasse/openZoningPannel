@@ -22,6 +22,10 @@ open_zoning:
   i2c_health_sensor: geo_i2c_health
   i2c_error_threshold: 3
 
+  # Minimum zone demand — 1 = disabled, 2 = require 2 zones before starting
+  min_active_zones: 1               # Set to 2 to require 2 simultaneous demands
+  min_demand_override_delay: 1800s  # 30 min emergency override if single zone waits too long
+
   # Central unit output switches
   out_y1: Out_Y1
   out_y2: Out_Y2
