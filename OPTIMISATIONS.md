@@ -121,9 +121,9 @@ components/
 - **Bénéfice** : Permettre à l'utilisateur d'ajuster la durée de purge selon son installation sans recompiler.
 
 ### 2. Zones enable/disable
-- **Fichier(s)** : `packages/configurations.yml`, `packages/automation.yml`, `packages/globals.yml`
-- **État** : ⬜ À faire
-- **Description** : Ajouter un switch par zone (`Zone X Enabled`) permettant de désactiver une zone inutilisée. Une zone désactivée serait ignorée dans tous les calculs (PASS 1-5) et son clapet resterait fermé.
+- **Fichier(s)** : `packages/configurations.yml`, `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`
+- **État** : ✅ Fait
+- **Description** : Ajouter un switch par zone (`Geo_zone_N_enabled`) permettant de désactiver une zone inutilisée. Une zone désactivée est ignorée dans tous les calculs (PASS 1–2.5–3), son `state_new` est forcé à `OFF` en PASS 4, et son clapet est fermé fyzicky. Les switches utilisent `restore_mode: RESTORE_DEFAULT_ON` pour survivre aux reboots. Le setter `set_zone_enabled(index, bool)` est exposé via des lambdas dans `configurations.yml`.
 - **Bénéfice** : Adaptabilité à différentes installations (3, 4, 5 ou 6 zones).
 
 ### 11. Seuil de démarrage minimum (min_active_zones)

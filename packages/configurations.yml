@@ -117,6 +117,80 @@ switch:
       - lambda: |-
           id(open_zoning_ctrl).set_auto_mode(false);
 
+  # Zone enable/disable switches (optimization #2)
+  # Zones are disabled by turning off the switch — damper closes, zone ignored
+  - platform: template
+    name: "Geo_zone_1_enabled"
+    id: geo_zone_1_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(0, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(0, false);
+
+  - platform: template
+    name: "Geo_zone_2_enabled"
+    id: geo_zone_2_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(1, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(1, false);
+
+  - platform: template
+    name: "Geo_zone_3_enabled"
+    id: geo_zone_3_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(2, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(2, false);
+
+  - platform: template
+    name: "Geo_zone_4_enabled"
+    id: geo_zone_4_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(3, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(3, false);
+
+  - platform: template
+    name: "Geo_zone_5_enabled"
+    id: geo_zone_5_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(4, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(4, false);
+
+  - platform: template
+    name: "Geo_zone_6_enabled"
+    id: geo_zone_6_enabled
+    icon: "mdi:hvac"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(5, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_enabled(5, false);
+
 binary_sensor:
   - platform: template
     name: "Geo_i2c_health"

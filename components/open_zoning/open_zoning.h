@@ -63,6 +63,11 @@ class OpenZoningController : public PollingComponent {
   void set_min_active_zones(uint8_t n) { min_active_zones_ = n; }
   void set_min_demand_override_delay(uint32_t ms) { min_demand_override_ms_ = ms; }
 
+  // --- Zone enable/disable (optimization #2) ---
+  void set_zone_enabled(uint8_t index, bool enabled) {
+    if (index < num_zones_) zones_[index].enabled = enabled;
+  }
+
   // --- Runtime getters (for template entities in YAML) ---
   bool get_auto_mode() const { return auto_mode_; }
   uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }

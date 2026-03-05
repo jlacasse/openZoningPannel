@@ -126,10 +126,13 @@ PURGE (6) > HEATING (4) > COOLING (2) > FAN (1) > OFF (0)
 
 | Condition | Position du clapet |
 |-----------|-------------------|
+| Zone désactivée (`enabled = false`) | Fermé (forcé, `state_new` = `OFF`) |
 | État = `WAIT` ou `ERROR` | Fermé |
 | Toutes les zones `OFF` | Ouvert (sécurité) |
 | État = `OFF` (d'autres actives) | Fermé |
 | État actif (HEATING/COOLING/FAN/PURGE) | Ouvert |
+
+**Zones désactivées** (`Geo_zone_N_enabled` switch OFF) : `state_new` est forcé à `OFF` et le clapet est physiquement fermé. La zone est également ignorée dans PASS 1–2.5–3. Voir optimisation #2.
 
 **Contrôle moteur** (`open_damper_()` / `close_damper_()`) :
 - Éteindre les deux sorties (open + close) immédiatement
@@ -187,6 +190,12 @@ Configurés dans `component.yml` et passés au composant via `__init__.py` :
 | Mode automatique | `auto_mode` | true | PASS 5 active ou non |
 | Seuil de demande minimum | `min_active_zones` | 1 (désactivé) | N zones requises pour démarrer |
 | Délai d'urgence demande | `min_demand_override_delay` | 1800s (30 min) | Délai avant override du seuil |
+
+Ajustables à chaud depuis Home Assistant via `configurations.yml` :
+
+| Entité HA | Setter C++ | Défaut | Description |
+|-----------|-----------|--------|-------------|
+| `Geo_zone_N_enabled` (switch ×6) | `set_zone_enabled(N-1, bool)` | ON | Activer / désactiver une zone |
 
 ## Logs et débogage
 

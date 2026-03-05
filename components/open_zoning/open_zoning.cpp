@@ -421,10 +421,18 @@ void OpenZoningController::pass4_damper_control_() {
   bool all_zones_off = (global_max_priority_ == 0);
 
   for (uint8_t i = 0; i < num_zones_; i++) {
-    if (!zones_[i].enabled)
-      continue;
-
     Zone &z = zones_[i];
+
+    // Disabled zones: force OFF, close damper
+    if (!z.enabled) {
+      z.state_new = ZoneState::OFF;
+      if (z.damper_state != 0) {
+        z.damper_state = 0;
+        ESP_LOGI(TAG, "Zone %d disabled — damper -> CLOSE", i + 1);
+        queue_close_damper_(i);
+      }
+      continue;
+    }
 
     // Determine target damper position
     uint8_t damper_target = 1;  // Default: open
