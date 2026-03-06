@@ -588,11 +588,15 @@ void OpenZoningController::pass5_output_control_() {
 // Replaces the on_value lambda in select.yml
 // ============================================================================
 void OpenZoningController::apply_mode_(int mode) {
-  // Sync the select entity to reflect the new mode in HA
+  // Sync the select entity to reflect the new mode in HA.
+  // Set component_driving_select_ = true so the on_value callback (opt. #10)
+  // can distinguish this internal update from a manual user change.
   if (mode_select_) {
+    component_driving_select_ = true;
     auto call = mode_select_->make_call();
     call.set_index(mode);
-    call.perform();
+    call.perform();  // on_value fires synchronously here
+    component_driving_select_ = false;
   }
 
   // Default: all off

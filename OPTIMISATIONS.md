@@ -194,13 +194,14 @@ components/
 - **Bénéfice** : Efficacité énergétique, éviter la surconsommation.
 
 ### 10. Validation anti-conflit dans le select
-- **Fichier(s)** : `packages/select.yml`
-- **État** : ⬜ À faire
-- **Description** : Le `on_value` du select logue un warning quand on change manuellement le mode en auto. On pourrait soit :
-  - Bloquer le changement manuel quand `geo_auto_mode` est actif
-  - Désactiver temporairement l'auto mode lors d'un changement manuel
-  - Ajouter un timer de retour en auto après X minutes
-- **Bénéfice** : Prévention des conflits de commande.
+- **Fichier(s)** : `packages/select.yml`, `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`
+- **État** : ✅ Fait (option retenue : blocage du changement manuel quand `geo_auto_mode` est actif)
+- **Description** : Le `on_value` du select logue un warning quand on change manuellement le mode en auto. Implémenté :
+  - Blocage du changement manuel quand `geo_auto_mode` est actif
+  - Un flag `component_driving_select_` dans le composant C++ empêche toute boucle infinie (distingue les changements internes vs utilisateur)
+  - `reapply_mode()` réapplique immédiatement le mode courant du composant (outputs physiques + select)
+  - `on_value` lambda dans `select.yml` : si `geo_auto_mode_switch` est ON et ce n'est pas le composant qui drive, appel `reapply_mode()` et log WARNING
+- **Bénéfice** : Prévention des conflits de commande — tout changement manuel accidentel depuis HA est annulé instantanément.
 
 ---
 
@@ -218,6 +219,7 @@ components/
 | 2026-03-02 | #1 Durée de purge configurable | ✅ |
 | 2026-03-03 | #8 Watchdog I2C pour MCP23017 | ✅ |
 | 2026-03-03 | #11 Seuil de démarrage minimum (min_active_zones) | ✅ |
+| 2026-03-05 | #10 Blocage changement manuel select (auto_mode actif) | ✅ |
 
 ---
 

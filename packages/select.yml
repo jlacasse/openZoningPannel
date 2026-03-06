@@ -14,6 +14,16 @@ select:
     - Purge Chauffage    # index 6 - Fan only, OB OFF (last was heating)
     - Purge Clim         # index 7 - Fan only, OB ON (last was cooling)
   initial_option: Arrêt
-  # NOTE: on_value lambda removed — mode application is handled by
-  # OpenZoningController::apply_mode_() in the C++ component (Phase 0D).
-  # The select entity is synced by the component via make_call().set_index().
+  # Optimization #10: block manual changes when auto_mode is active.
+  # The component sets component_driving_select_ = true before calling
+  # make_call().set_index(), so we can distinguish component-driven vs.
+  # user-driven changes without any infinite-loop risk.
+  on_value:
+    - lambda: |-
+        if (id(geo_auto_mode_switch).state &&
+            !id(open_zoning_ctrl).is_component_driving_select()) {
+          ESP_LOGW("open_zoning",
+                   "Manual mode change to '%s' blocked: auto_mode is active — reverting",
+                   x.c_str());
+          id(open_zoning_ctrl).reapply_mode();
+        }

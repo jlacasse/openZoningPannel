@@ -68,6 +68,14 @@ class OpenZoningController : public PollingComponent {
     if (index < num_zones_) zones_[index].enabled = enabled;
   }
 
+  // --- Optimization #10: anti-conflict select guard ---
+  // Immediately re-applies the component's current mode, overriding any manual
+  // select change made from Home Assistant while auto_mode is active.
+  void reapply_mode() { apply_mode_(current_mode_); }
+  // Returns true while the component itself is driving the select entity,
+  // allowing on_value callbacks to distinguish component vs. user changes.
+  bool is_component_driving_select() const { return component_driving_select_; }
+
   // --- Runtime getters (for template entities in YAML) ---
   bool get_auto_mode() const { return auto_mode_; }
   uint32_t get_min_cycle_time_ms() const { return min_cycle_time_ms_; }
@@ -152,6 +160,7 @@ class OpenZoningController : public PollingComponent {
   int last_active_mode_{0};   // 0=unknown, 1=heating, 2=cooling
   bool auto_mode_{true};      // Auto mode enabled by default
   unsigned long stage1_start_ms_{0};  // Stage 2 escalation timer
+  bool component_driving_select_{false};  // Optimization #10: true while component drives the select
 };
 
 }  // namespace open_zoning
