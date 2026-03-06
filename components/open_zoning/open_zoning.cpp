@@ -34,13 +34,16 @@ bool Zone::calc_state() {
   }
 
   // State determination (highest priority first)
-  if (y2->state && g->state && ob->state) {
+  // ob_on_heat=true  : O/B active → heating (default)
+  // ob_on_heat=false : O/B active → cooling (some thermostats, e.g. Carrier)
+  const bool ob_heating = ob_on_heat ? ob->state : !ob->state;
+  if (y2->state && g->state && ob_heating) {
     state_new = ZoneState::HEATING_STAGE2;
-  } else if (y1->state && g->state && ob->state) {
+  } else if (y1->state && g->state && ob_heating) {
     state_new = ZoneState::HEATING_STAGE1;
-  } else if (y2->state && g->state && !ob->state) {
+  } else if (y2->state && g->state && !ob_heating) {
     state_new = ZoneState::COOLING_STAGE2;
-  } else if (y1->state && g->state && !ob->state) {
+  } else if (y1->state && g->state && !ob_heating) {
     state_new = ZoneState::COOLING_STAGE1;
   } else if (g->state) {
     state_new = ZoneState::FAN_ONLY;

@@ -158,6 +158,16 @@ components/
   - Valeur restaurée au boot, loguée à `INFO` ; absence de valeur valide loguée à `DEBUG`.
 - **Bénéfice** : La direction de purge (clapet OB ouvert ou fermé) est correcte après un reboot, même si le démarrage survient pendant ou juste après un cycle actif.
 
+### 12. Polarité O/B configurable par zone
+- **Fichier(s)** : `components/open_zoning/zone.h`, `components/open_zoning/open_zoning.cpp`, `components/open_zoning/open_zoning.h`, `packages/configurations.yml`
+- **État** : ✅ Fait
+- **Description** : Chaque zone dispose d'un switch de configuration `Geo_ZN_ob_on_heat` (ON = O/B actif → chauffage, OFF = O/B actif → climatisation). Implémentation :
+  - Membre `bool ob_on_heat{true}` ajouté à la struct `Zone`
+  - `calc_state()` calcule localement `const bool ob_heating = ob_on_heat ? ob->state : !ob->state` et l'utilise dans la détermination de l'état HEATING/COOLING
+  - Setter `set_zone_ob_on_heat(index, bool)` dans `OpenZoningController`
+  - 6 switches template dans `configurations.yml` avec `restore_mode: RESTORE_DEFAULT_ON` (persistance NVS automatique)
+- **Bénéfice** : Compatible avec les thermostats où O/B actif signifie refroidissement (ex: certains Carrier). Configurable par zone sans recompiler.
+
 ### 6. Clarification des sorties W2/W3/W1e
 - **Fichier(s)** : `packages/switches.yml`, `packages/select.yml`
 - **État** : ⬜ À faire
@@ -226,6 +236,7 @@ components/
 | 2026-03-05 | #10 Blocage changement manuel select (auto_mode actif) | ✅ |
 | 2026-03-05 | #3 Capteurs de diagnostic (6 sensors) | ✅ |
 | 2026-03-06 | #5 Persistance last_active_mode (ESPPreferenceObject) | ✅ |
+| 2026-03-06 | #12 Polarité O/B configurable par zone | ✅ |
 
 ---
 

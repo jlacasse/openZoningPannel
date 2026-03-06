@@ -70,6 +70,13 @@ class OpenZoningController : public PollingComponent {
     if (index < num_zones_) zones_[index].enabled = enabled;
   }
 
+  // --- O/B polarity per zone (optimization #12) ---
+  // on_heat=true  : O/B active → heating (default)
+  // on_heat=false : O/B active → cooling
+  void set_zone_ob_on_heat(uint8_t index, bool on_heat) {
+    if (index < num_zones_) zones_[index].ob_on_heat = on_heat;
+  }
+
   // --- Optimization #3: diagnostic sensor setters ---
   void set_active_zones_sensor(sensor::Sensor *s)       { active_zones_sensor_ = s; }
   void set_stage1_elapsed_sensor(sensor::Sensor *s)     { stage1_elapsed_sensor_ = s; }

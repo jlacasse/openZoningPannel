@@ -103,6 +103,11 @@ struct Zone {
   // Zone enable flag (for future optimization #2)
   bool enabled{true};
 
+  // O/B signal polarity (optimization #12)
+  // true  = O/B active → heating (default, most heat pumps)
+  // false = O/B active → cooling (some heat pumps, e.g. Carrier)
+  bool ob_on_heat{true};
+
   // --- PASS 1: Calculate zone state from thermostat inputs ---
   // Returns true if this zone triggered an error
   bool calc_state();

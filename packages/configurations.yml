@@ -191,6 +191,80 @@ switch:
     turn_off_action:
       - lambda: id(open_zoning_ctrl).set_zone_enabled(5, false);
 
+  # O/B signal polarity per zone (optimization #12)
+  # ON (default) = O/B active → chauffage  |  OFF = O/B actif → climatisation
+  - platform: template
+    name: "Geo_Z1_ob_on_heat"
+    id: geo_z1_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(0, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(0, false);
+
+  - platform: template
+    name: "Geo_Z2_ob_on_heat"
+    id: geo_z2_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(1, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(1, false);
+
+  - platform: template
+    name: "Geo_Z3_ob_on_heat"
+    id: geo_z3_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(2, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(2, false);
+
+  - platform: template
+    name: "Geo_Z4_ob_on_heat"
+    id: geo_z4_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(3, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(3, false);
+
+  - platform: template
+    name: "Geo_Z5_ob_on_heat"
+    id: geo_z5_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(4, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(4, false);
+
+  - platform: template
+    name: "Geo_Z6_ob_on_heat"
+    id: geo_z6_ob_on_heat
+    icon: "mdi:heat-pump-outline"
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(5, true);
+    turn_off_action:
+      - lambda: id(open_zoning_ctrl).set_zone_ob_on_heat(5, false);
+
 binary_sensor:
   - platform: template
     name: "Geo_i2c_health"
