@@ -133,15 +133,16 @@ components/
 - **Bénéfice** : Réduction des cycles courts sur les géothermies, meilleur COP, moins d'usure.
 
 ### 3. Capteurs de diagnostic
-- **Fichier(s)** : `packages/text_sensors.yml` ou nouveau fichier `packages/sensors.yml`
-- **État** : ⬜ À faire
-- **Description** : Ajouter des capteurs de monitoring :
-  - Nombre de zones actives (sensor)
-  - Temps écoulé en Stage 1 avant escalation (sensor)
-  - Uptime de l'ESP (sensor, plateforme `uptime`)
-  - Free Heap memory (sensor, plateforme `debug`)
-  - Protection cycle court active (binary_sensor global)
-  - Compteur de changements de mode (sensor)
+- **Fichier(s)** : `packages/sensors.yml` (nouveau), `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`, `components/open_zoning/__init__.py`, `packages/component.yml`
+- **État** : ✅ Fait
+- **Description** : Capteurs de monitoring ajoutés :
+  - `Geo_active_zones` (sensor) — nombre de zones avec clapet ouvert participant au cycle (HEATING/COOLING/FAN/PURGE, exclut OFF/WAIT/ERROR)
+  - `Geo_stage1_elapsed` (sensor, secondes) — temps écoulé en Stage 1 depuis l'entrée dans ce mode ; 0 si pas en Stage 1 ; permet de surveiller l'approche du seuil d'escalation
+  - `Geo_uptime` (sensor, plateforme `uptime`) — temps de fonctionnement de l'ESP en secondes
+  - `Geo_free_heap` (sensor, plateforme `debug`) — mémoire heap libre en octets
+  - `Geo_short_cycle_protection` (binary_sensor) — ON si au moins une zone est maintenue active pour respecter `min_cycle_time`
+  - `Geo_mode_changes` (sensor) — compteur cumulatif de transitions de mode depuis le boot
+- **Tous les capteurs composant sont publiés par `publish_diagnostics_()`** appelé à chaque `update()` ; le compteur de mode est incrémenté dans `pass5_output_control_()`.
 - **Bénéfice** : Meilleure observabilité et détection proactive des problèmes.
 
 ---
@@ -220,6 +221,7 @@ components/
 | 2026-03-03 | #8 Watchdog I2C pour MCP23017 | ✅ |
 | 2026-03-03 | #11 Seuil de démarrage minimum (min_active_zones) | ✅ |
 | 2026-03-05 | #10 Blocage changement manuel select (auto_mode actif) | ✅ |
+| 2026-03-05 | #3 Capteurs de diagnostic (6 sensors) | ✅ |
 
 ---
 

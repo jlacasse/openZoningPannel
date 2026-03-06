@@ -1,0 +1,73 @@
+# Optimization #3: Capteurs de diagnostic — openZoningPannel
+#
+# Sensors publiés automatiquement par le composant C++ à chaque cycle update().
+# Les sensors "template" sans lambda sont mis-à-jour par publish_state() en C++.
+# Les sensors uptime et debug sont des plateformes ESPHome standards.
+
+# Requis par la plateforme sensor debug (heap libre)
+debug:
+
+sensor:
+  # --------------------------------------------------------------------------
+  # ESP system
+  # --------------------------------------------------------------------------
+  - platform: uptime
+    name: "Geo_uptime"
+    id: geo_uptime
+    update_interval: 60s
+    unit_of_measurement: "s"
+    icon: "mdi:clock-outline"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+
+  - platform: debug
+    free:
+      name: "Geo_free_heap"
+      id: geo_free_heap
+      icon: "mdi:memory"
+      accuracy_decimals: 0
+      entity_category: diagnostic
+
+  # --------------------------------------------------------------------------
+  # Composant open_zoning — publiés par publish_diagnostics_() dans update()
+  # --------------------------------------------------------------------------
+
+  # Nombre de zones avec clapet ouvert et participant au cycle en cours
+  # (états HEATING_S1/S2, COOLING_S1/S2, FAN_ONLY, PURGE — exclut OFF/WAIT/ERROR)
+  - platform: template
+    name: "Geo_active_zones"
+    id: geo_active_zones
+    icon: "mdi:home-group"
+    unit_of_measurement: "zones"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+
+  # Temps écoulé en Stage 1 depuis l'entrée dans ce mode (0 si pas en Stage 1).
+  # Utile pour surveiller l'approche du seuil d'escalation Stage 2.
+  - platform: template
+    name: "Geo_stage1_elapsed"
+    id: geo_stage1_elapsed
+    icon: "mdi:timer-outline"
+    unit_of_measurement: "s"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+
+  # Compteur cumulatif de changements de mode depuis le dernier boot.
+  # Chaque transition réelle de mode (ex.: Arrêt→Chauffage S1) incrémente de 1.
+  - platform: template
+    name: "Geo_mode_changes"
+    id: geo_mode_changes
+    icon: "mdi:counter"
+    unit_of_measurement: "changes"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+
+binary_sensor:
+  # Protection cycle court active sur au moins une zone.
+  # ON si une zone est maintenue en chauffe/refroidissement pour respecter
+  # le temps minimum de cycle (min_cycle_time).
+  - platform: template
+    name: "Geo_short_cycle_protection"
+    id: geo_short_cycle_protection
+    icon: "mdi:shield-alert"
+    entity_category: diagnostic

@@ -213,6 +213,9 @@ void OpenZoningController::update() {
   // Log summary at debug level
   ESP_LOGD(TAG, "Update cycle complete — max_priority=%d error_flag=%s",
            global_max_priority_, zone_error_flag_ ? "YES" : "no");
+
+  // Optimization #3: publish diagnostic sensors to Home Assistant
+  publish_diagnostics_();
 }
 
 void OpenZoningController::loop() {
@@ -577,6 +580,7 @@ void OpenZoningController::pass5_output_control_() {
 
   // --- Apply mode change via select entity ---
   if (new_mode != current_mode_) {
+    mode_change_count_++;  // Optimization #3: count real transitions
     ESP_LOGI(TAG, "Mode change: %d -> %d (priority: %d)", current_mode_, new_mode, global_max_priority_);
     current_mode_ = new_mode;
     apply_mode_(new_mode);
@@ -764,6 +768,51 @@ void OpenZoningController::check_i2c_health_() {
       i2c_healthy_ = true;
       if (i2c_health_sensor_) i2c_health_sensor_->publish_state(true);
     }
+  }
+}
+
+// ============================================================================
+// Optimization #3: Diagnostic sensors — published every update() cycle
+// ============================================================================
+void OpenZoningController::publish_diagnostics_() {
+  // --- Active zone count ---
+  // Count zones that have an open damper and are doing something useful
+  // (heating, cooling, fan, purge) — i.e. everything except OFF / WAIT / ERROR.
+  if (active_zones_sensor_) {
+    uint8_t active_count = 0;
+    for (uint8_t i = 0; i < num_zones_; i++) {
+      if (!zones_[i].enabled) continue;
+      ZoneState s = zones_[i].state;
+      if (s != ZoneState::OFF && s != ZoneState::WAIT && s != ZoneState::ERROR)
+        active_count++;
+    }
+    active_zones_sensor_->publish_state(active_count);
+  }
+
+  // --- Stage 1 elapsed time (seconds since Stage 1 entry, 0 if not in Stage 1) ---
+  if (stage1_elapsed_sensor_) {
+    float elapsed = 0.0f;
+    if (stage1_start_ms_ > 0 && (current_mode_ == 2 || current_mode_ == 4)) {
+      elapsed = (millis() - stage1_start_ms_) / 1000.0f;
+    }
+    stage1_elapsed_sensor_->publish_state(elapsed);
+  }
+
+  // --- Short cycle protection: ON if any enabled zone is currently protected ---
+  if (short_cycle_sensor_) {
+    bool any_protected = false;
+    for (uint8_t i = 0; i < num_zones_; i++) {
+      if (zones_[i].enabled && zones_[i].short_cycle_protection) {
+        any_protected = true;
+        break;
+      }
+    }
+    short_cycle_sensor_->publish_state(any_protected);
+  }
+
+  // --- Mode change counter (cumulative since boot) ---
+  if (mode_changes_sensor_) {
+    mode_changes_sensor_->publish_state(static_cast<float>(mode_change_count_));
   }
 }
 

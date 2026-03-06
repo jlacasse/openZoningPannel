@@ -7,6 +7,7 @@
 #include "esphome/components/select/select.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/components/sensor/sensor.h"
 #include "zone.h"
 
 namespace esphome {
@@ -68,6 +69,12 @@ class OpenZoningController : public PollingComponent {
     if (index < num_zones_) zones_[index].enabled = enabled;
   }
 
+  // --- Optimization #3: diagnostic sensor setters ---
+  void set_active_zones_sensor(sensor::Sensor *s)       { active_zones_sensor_ = s; }
+  void set_stage1_elapsed_sensor(sensor::Sensor *s)     { stage1_elapsed_sensor_ = s; }
+  void set_mode_changes_sensor(sensor::Sensor *s)       { mode_changes_sensor_ = s; }
+  void set_short_cycle_sensor(binary_sensor::BinarySensor *s) { short_cycle_sensor_ = s; }
+
   // --- Optimization #10: anti-conflict select guard ---
   // Immediately re-applies the component's current mode, overriding any manual
   // select change made from Home Assistant while auto_mode is active.
@@ -92,6 +99,7 @@ class OpenZoningController : public PollingComponent {
   void pass4_damper_control_();
   void pass5_output_control_();
   void check_i2c_health_();
+  void publish_diagnostics_();  // Optimization #3
 
   // --- Damper operation queue ---
   // Each damper change is split into 3 individual I2C operations
@@ -161,6 +169,13 @@ class OpenZoningController : public PollingComponent {
   bool auto_mode_{true};      // Auto mode enabled by default
   unsigned long stage1_start_ms_{0};  // Stage 2 escalation timer
   bool component_driving_select_{false};  // Optimization #10: true while component drives the select
+
+  // --- Optimization #3: diagnostic sensors ---
+  sensor::Sensor *active_zones_sensor_{nullptr};
+  sensor::Sensor *stage1_elapsed_sensor_{nullptr};
+  sensor::Sensor *mode_changes_sensor_{nullptr};
+  binary_sensor::BinarySensor *short_cycle_sensor_{nullptr};
+  uint32_t mode_change_count_{0};  // incremented at each real mode transition
 };
 
 }  // namespace open_zoning

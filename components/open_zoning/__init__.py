@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import binary_sensor, switch, select, text_sensor, i2c
+from esphome.components import binary_sensor, switch, select, text_sensor, i2c, sensor
 from esphome.const import CONF_ID
 
 CODEOWNERS = ["@jlacasse"]
@@ -55,6 +55,12 @@ CONF_I2C_ERROR_THRESHOLD = "i2c_error_threshold"
 CONF_MIN_ACTIVE_ZONES = "min_active_zones"
 CONF_MIN_DEMAND_OVERRIDE_DELAY = "min_demand_override_delay"
 
+# Configuration keys — optimization #3: diagnostic sensors
+CONF_ACTIVE_ZONES_SENSOR    = "active_zones_sensor"
+CONF_STAGE1_ELAPSED_SENSOR  = "stage1_elapsed_sensor"
+CONF_MODE_CHANGES_SENSOR    = "mode_changes_sensor"
+CONF_SHORT_CYCLE_SENSOR     = "short_cycle_sensor"
+
 # Per-zone schema: thermostat inputs + damper switches
 ZONE_SCHEMA = cv.Schema(
     {
@@ -102,6 +108,11 @@ CONFIG_SCHEMA = cv.Schema(
         # Minimum zone demand
         cv.Optional(CONF_MIN_ACTIVE_ZONES, default=1): cv.int_range(min=1, max=6),
         cv.Optional(CONF_MIN_DEMAND_OVERRIDE_DELAY, default="1800s"): cv.positive_time_period_milliseconds,
+        # Optimization #3 — diagnostic sensors (all optional)
+        cv.Optional(CONF_ACTIVE_ZONES_SENSOR):   cv.use_id(sensor.Sensor),
+        cv.Optional(CONF_STAGE1_ELAPSED_SENSOR): cv.use_id(sensor.Sensor),
+        cv.Optional(CONF_MODE_CHANGES_SENSOR):   cv.use_id(sensor.Sensor),
+        cv.Optional(CONF_SHORT_CYCLE_SENSOR):    cv.use_id(binary_sensor.BinarySensor),
     }
 ).extend(cv.polling_component_schema("10s"))
 
@@ -182,3 +193,17 @@ async def to_code(config):
     # Minimum zone demand
     cg.add(var.set_min_active_zones(config[CONF_MIN_ACTIVE_ZONES]))
     cg.add(var.set_min_demand_override_delay(config[CONF_MIN_DEMAND_OVERRIDE_DELAY]))
+
+    # Optimization #3: diagnostic sensors
+    if CONF_ACTIVE_ZONES_SENSOR in config:
+        s = await cg.get_variable(config[CONF_ACTIVE_ZONES_SENSOR])
+        cg.add(var.set_active_zones_sensor(s))
+    if CONF_STAGE1_ELAPSED_SENSOR in config:
+        s = await cg.get_variable(config[CONF_STAGE1_ELAPSED_SENSOR])
+        cg.add(var.set_stage1_elapsed_sensor(s))
+    if CONF_MODE_CHANGES_SENSOR in config:
+        s = await cg.get_variable(config[CONF_MODE_CHANGES_SENSOR])
+        cg.add(var.set_mode_changes_sensor(s))
+    if CONF_SHORT_CYCLE_SENSOR in config:
+        s = await cg.get_variable(config[CONF_SHORT_CYCLE_SENSOR])
+        cg.add(var.set_short_cycle_sensor(s))

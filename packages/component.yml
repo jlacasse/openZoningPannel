@@ -26,6 +26,12 @@ open_zoning:
   min_active_zones: 1               # Set to 2 to require 2 simultaneous demands
   min_demand_override_delay: 1800s  # 30 min emergency override if single zone waits too long
 
+  # Optimization #3: diagnostic sensors
+  active_zones_sensor:   geo_active_zones
+  stage1_elapsed_sensor: geo_stage1_elapsed
+  mode_changes_sensor:   geo_mode_changes
+  short_cycle_sensor:    geo_short_cycle_protection
+
   # Central unit output switches
   out_y1: Out_Y1
   out_y2: Out_Y2

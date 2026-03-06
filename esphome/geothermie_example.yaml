@@ -12,4 +12,5 @@ packages:
   switches: github://jlacasse/openZoningPannel/packages/switches.yml
   select: github://jlacasse/openZoningPannel/packages/select.yml
   text_sensors: github://jlacasse/openZoningPannel/packages/text_sensors.yml
+  sensors: github://jlacasse/openZoningPannel/packages/sensors.yml
   component: github://jlacasse/openZoningPannel/packages/component.yml
