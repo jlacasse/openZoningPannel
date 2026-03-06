@@ -8,6 +8,7 @@
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/i2c/i2c.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/core/preferences.h"
 #include "zone.h"
 
 namespace esphome {
@@ -169,6 +170,7 @@ class OpenZoningController : public PollingComponent {
   bool auto_mode_{true};      // Auto mode enabled by default
   unsigned long stage1_start_ms_{0};  // Stage 2 escalation timer
   bool component_driving_select_{false};  // Optimization #10: true while component drives the select
+  ESPPreferenceObject last_active_mode_pref_;  // Optimization #5: flash persistence
 
   // --- Optimization #3: diagnostic sensors ---
   sensor::Sensor *active_zones_sensor_{nullptr};

@@ -14,7 +14,7 @@ La refactorisation majeure (#0) consiste à migrer le lambda monolithique de 614
 
 ### 0. Migration vers un composant C++ ESPHome
 
-- **État global** : ⬜ En cours
+- **État global** : ✅ Complète
 - **Approche** : Référencer les entités YAML existantes via `cv.use_id()` (approche la plus simple — pas de création d'entités côté C++)
 - **Bénéfice global** : Élimine la duplication de macros, rend le nombre de zones configurable (1-6), permet l'OOP, et rend toutes les optimisations #1-#10 triviales à implémenter.
 
@@ -150,10 +150,13 @@ components/
 ## 🟡 Priorité Moyenne
 
 ### 5. Persistance de `last_active_mode` au redémarrage
-- **Fichier(s)** : `packages/globals.yml`, `packages/automation.yml`
-- **État** : ⬜ À faire
-- **Description** : Sauvegarder `last_active_mode` en flash via `ESPPreferenceObject` pour que la direction de purge survive un redémarrage. Actuellement, après un reboot pendant une purge, le système ne sait plus si c'était chauffage ou climatisation.
-- **Bénéfice** : Fiabilité de la purge post-reboot.
+- **Fichier(s)** : `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`
+- **État** : ✅ Fait
+- **Description** : `last_active_mode` (0=inconnu, 1=chauffage, 2=climatisation) est sauvegardé en flash via `ESPPreferenceObject` (clé FNV1a `"open_zoning_last_active_mode"`). Implémentation :
+  - Dans `setup()` : initialisation de la préférence et rechargement de la valeur stockée si valide (1 ou 2).
+  - Dans `pass5_output_control_()` : sauvegarde **conditionnelle** uniquement quand la valeur change (chauffage ↔ climatisation), évitant l'usure du flash (les cycles de chauffe/refroid durent plusieurs minutes ; sans la condition, le save se déclencherait toutes les 10 secondes).
+  - Valeur restaurée au boot, loguée à `INFO` ; absence de valeur valide loguée à `DEBUG`.
+- **Bénéfice** : La direction de purge (clapet OB ouvert ou fermé) est correcte après un reboot, même si le démarrage survient pendant ou juste après un cycle actif.
 
 ### 6. Clarification des sorties W2/W3/W1e
 - **Fichier(s)** : `packages/switches.yml`, `packages/select.yml`
@@ -211,7 +214,7 @@ components/
 | Date | Optimisation | Statut |
 |------|-------------|--------|
 | 2026-02-11 | Plan créé | ✅ |
-| 2026-02-11 | #0 Migration C++ ajoutée (5 phases) | ⬜ En cours |
+| 2026-02-11 | #0 Migration C++ ajoutée (5 phases) | ✅ |
 | 2026-02-11 | #0 Phase 0A — Scaffolding composant | ✅ En attente de validation compilation |
 | 2026-02-12 | #0 Phase 0B — Référencement entités (binary sensors) | ✅ |
 | 2026-02-12 | #0 Phase 0C — Migration PASS 1-3 en C++ | ✅ |
@@ -222,6 +225,7 @@ components/
 | 2026-03-03 | #11 Seuil de démarrage minimum (min_active_zones) | ✅ |
 | 2026-03-05 | #10 Blocage changement manuel select (auto_mode actif) | ✅ |
 | 2026-03-05 | #3 Capteurs de diagnostic (6 sensors) | ✅ |
+| 2026-03-06 | #5 Persistance last_active_mode (ESPPreferenceObject) | ✅ |
 
 ---
 

@@ -162,6 +162,19 @@ void OpenZoningController::setup() {
   last_active_mode_ = 0;
   stage1_start_ms_ = 0;
 
+  // Optimization #5: restore last_active_mode from flash (ensures correct purge
+  // direction even after a reboot that happened during a heating or cooling cycle).
+  last_active_mode_pref_ = global_preferences->make_preference<uint8_t>(
+      fnv1_hash("open_zoning_last_active_mode"));
+  uint8_t stored_mode = 0;
+  if (last_active_mode_pref_.load(&stored_mode) && stored_mode >= 1 && stored_mode <= 2) {
+    last_active_mode_ = stored_mode;
+    ESP_LOGI(TAG, "Opt#5: restored last_active_mode=%d (%s) from flash",
+             last_active_mode_, last_active_mode_ == 1 ? "heating" : "cooling");
+  } else {
+    ESP_LOGD(TAG, "Opt#5: no valid last_active_mode in flash — defaulting to 0 (unknown)");
+  }
+
   // Publish initial "Off" state to all text sensors
   for (uint8_t i = 0; i < num_zones_; i++) {
     if (zones_[i].state_sensor) {
@@ -536,7 +549,12 @@ void OpenZoningController::pass5_output_control_() {
         }
       }
       new_mode = needs_stage2 ? 3 : 2;  // Clim Stage 2 or 1
-      last_active_mode_ = 2;  // cooling
+      // Optimization #5: persist only when value changes to avoid flash wear
+      if (last_active_mode_ != 2) {
+        last_active_mode_ = 2;  // cooling
+        last_active_mode_pref_.save(&last_active_mode_);
+        ESP_LOGD(TAG, "Opt#5: saved last_active_mode=2 (cooling)");
+      }
 
     } else if (global_max_priority_ == 4) {
       // Heating demand — check if any zone needs stage 2
@@ -548,7 +566,12 @@ void OpenZoningController::pass5_output_control_() {
         }
       }
       new_mode = needs_stage2 ? 5 : 4;  // Chauffage Stage 2 or 1
-      last_active_mode_ = 1;  // heating
+      // Optimization #5: persist only when value changes to avoid flash wear
+      if (last_active_mode_ != 1) {
+        last_active_mode_ = 1;  // heating
+        last_active_mode_pref_.save(&last_active_mode_);
+        ESP_LOGD(TAG, "Opt#5: saved last_active_mode=1 (heating)");
+      }
 
     } else if (global_max_priority_ == 6) {
       // Purge demand — fan only, preserve OB position from last active mode
