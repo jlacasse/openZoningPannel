@@ -23,7 +23,7 @@ enum class ZoneState : uint8_t {
 
 /// Returns the priority level for a given zone state
 /// PURGE(6) > HEATING(4) > COOLING(2) > FAN(1) > OFF/WAIT/ERROR(0)
-inline int state_to_priority(ZoneState state) {
+inline uint8_t state_to_priority(ZoneState state) {
   switch (state) {
     case ZoneState::PURGE:
       return 6;
@@ -116,7 +116,7 @@ struct Zone {
   void apply_short_cycle_protection(unsigned long current_time, unsigned long min_cycle_time_ms);
 
   // --- PASS 3: Priority ---
-  int get_priority() const { return state_to_priority(state_new); }
+  uint8_t get_priority() const { return state_to_priority(state_new); }
 
   // --- Helper methods ---
   bool is_heating() const {

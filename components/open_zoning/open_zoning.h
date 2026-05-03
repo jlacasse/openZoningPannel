@@ -128,7 +128,7 @@ class OpenZoningController : public PollingComponent {
   void queue_close_damper_(uint8_t zone);
 
   // --- Central unit mode application ---
-  void apply_mode_(int mode);
+  void apply_mode_(uint8_t mode);
 
   // --- Zone data ---
   Zone zones_[MAX_ZONES];
@@ -171,9 +171,9 @@ class OpenZoningController : public PollingComponent {
 
   // --- Runtime state ---
   bool zone_error_flag_{false};
-  int global_max_priority_{0};
-  int current_mode_{0};       // Tracks active mode index (0-7)
-  int last_active_mode_{0};   // 0=unknown, 1=heating, 2=cooling
+  uint8_t global_max_priority_{0};
+  uint8_t current_mode_{0};       // Tracks active mode index (0-7)
+  uint8_t last_active_mode_{0};   // 0=unknown, 1=heating, 2=cooling
   bool auto_mode_{true};      // Auto mode enabled by default
   unsigned long stage1_start_ms_{0};  // Stage 2 escalation timer
   bool component_driving_select_{false};  // Optimization #10: true while component drives the select

@@ -182,8 +182,8 @@ components/
 ## 🔵 Priorité Faible
 
 ### 7. Réduction de la consommation mémoire (types)
-- **Fichier(s)** : `packages/globals.yml`
-- **État** : ⬜ À faire (intégré automatiquement dans #0 — `uint8_t` natif dans la struct `Zone`)
+- **Fichier(s)** : `components/open_zoning/zone.h`, `components/open_zoning/open_zoning.h`, `components/open_zoning/open_zoning.cpp`
+- **État** : ✅ Fait
 - **Description** : Remplacer les `int` par des `uint8_t` pour les variables dont les valeurs ne dépassent jamais 255 :
   - `z*_state` (max 99)
   - `z*_error_count` (max ~10)
@@ -237,6 +237,7 @@ components/
 | 2026-03-05 | #3 Capteurs de diagnostic (6 sensors) | ✅ |
 | 2026-03-06 | #5 Persistance last_active_mode (ESPPreferenceObject) | ✅ |
 | 2026-03-06 | #12 Polarité O/B configurable par zone | ✅ |
+| 2026-05-02 | #7 Réduction mémoire (uint8_t) | ✅ |
 
 ---
 

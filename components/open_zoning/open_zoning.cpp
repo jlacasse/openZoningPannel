@@ -407,7 +407,7 @@ void OpenZoningController::pass3_priority_analysis_() {
     if (!zones_[i].enabled)
       continue;
 
-    int p = zones_[i].get_priority();
+    uint8_t p = zones_[i].get_priority();
     if (p > global_max_priority_) {
       global_max_priority_ = p;
     }
@@ -418,7 +418,7 @@ void OpenZoningController::pass3_priority_analysis_() {
     if (!zones_[i].enabled)
       continue;
 
-    int p = zones_[i].get_priority();
+    uint8_t p = zones_[i].get_priority();
     if (p > 0 && p < global_max_priority_ && zones_[i].state_new != ZoneState::ERROR) {
       zones_[i].state_new = ZoneState::WAIT;
     }
@@ -525,7 +525,7 @@ void OpenZoningController::pass5_output_control_() {
     return;  // Manual mode — don't touch outputs
   }
 
-  int new_mode = 0;  // Default: Arrêt (index 0)
+  uint8_t new_mode = 0;  // Default: Arrêt (index 0)
 
   // --- Error handling: force shutdown on zone error ---
   if (zone_error_flag_) {
@@ -617,7 +617,7 @@ void OpenZoningController::pass5_output_control_() {
 // Apply mode — drives LEDs and outputs, syncs the select entity
 // Replaces the on_value lambda in select.yml
 // ============================================================================
-void OpenZoningController::apply_mode_(int mode) {
+void OpenZoningController::apply_mode_(uint8_t mode) {
   // Sync the select entity to reflect the new mode in HA.
   // Set component_driving_select_ = true so the on_value callback (opt. #10)
   // can distinguish this internal update from a manual user change.
