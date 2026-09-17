@@ -17,7 +17,7 @@ namespace open_zoning {
 static const char *const TAG = "open_zoning";
 static const uint8_t MAX_ZONES = 6;
 
-class OpenZoningController : public PollingComponent {
+class OpenZoningController final : public PollingComponent {
  public:
   // --- PollingComponent overrides ---
   void setup() override;

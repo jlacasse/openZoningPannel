@@ -6,8 +6,8 @@ external_components:
       type: git
       url: https://github.com/jlacasse/openZoningPannel
       ref: main
+    refresh: 1d
     components: [open_zoning]
-    refresh: 0s
 
 open_zoning:
   id: open_zoning_ctrl
